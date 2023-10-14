@@ -85,7 +85,7 @@ del latest.json
 set "file=kdmapper_log.txt"
 
 :: Run valthrun-driver.sys with kdmapper
-::kdmapper.exe valthrun-driver.sys > %file%
+kdmapper.exe valthrun-driver.sys > %file%
 
 set "str1=DriverEntry returned 0xcf000004"
 set "str2=DriverEntry returned 0x0"
