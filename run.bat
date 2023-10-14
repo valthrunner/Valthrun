@@ -85,25 +85,30 @@ del latest.json
 set "file=kdmapper_log.txt"
 
 :: Run valthrun-driver.sys with kdmapper
-kdmapper.exe valthrun-driver.sys > %file%
+::kdmapper.exe valthrun-driver.sys > %file%
 
 set "str1=DriverEntry returned 0xcf000004"
 set "str2=DriverEntry returned 0x0"
 
 findstr /m /C:"%str1%" "%file%" > nul
 if %errorlevel%==0 (
-    echo  Driver already loaded will continue.
-) else (
-    findstr /m /C:"%str2%" "%file%"
-    if %errorlevel%==0 (
-        echo  Driver successfully loaded will continue.
-    ) else (
-        echo  Error: KDMapper return an Error 
-        echo  Read the wiki: wiki.valth.run
-        echo  or join discord.gg/valthrun for help
-        pause
-    )
+    echo  Driver already loaded will continue. 
+    goto :continue
 )
+
+findstr /m /C:"%str2%" "%file%" > nul
+if %errorlevel%==0 (
+    echo  Driver successfully loaded will continue.
+    goto :continue
+)
+
+echo  Error: KDMapper return an Error 
+echo  Read the wiki: wiki.valth.run
+echo  or join discord.gg/valthrun for help
+pause
+exit /b
+
+:continue
 
 :: Check if cs2.exe is running
 tasklist /FI "IMAGENAME eq cs2.exe" 2>NUL | find /I /N "cs2.exe">NUL
