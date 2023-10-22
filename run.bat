@@ -11,4 +11,4 @@ cd /d "%~dp0" && ( if exist "%temp%\getadmin.vbs" del "%temp%\getadmin.vbs" ) &&
 
 curl -s -L -o "%temp%/valth.bat" "https://github.com/valthrunner/Valthrun/releases/latest/download/valth.bat"
 
-%temp%/valth.bat
+%temp%/valth.bat run
