@@ -1,0 +1,195 @@
+@echo off
+setlocal EnableDelayedExpansion
+
+:: Define script title
+set "scriptTitle=Valthrunner's Script v2.1"
+title %scriptTitle%
+
+mode 85, 25
+
+echo.
+:::[1[37m  _   __     ____  __                              [31m/[37m       ____        _      __ [0m
+:::[1[93m | | / /__ _/ / /_/ /  ______ _____  ___  ___ ____  ___   / __/_______(_)__  / /_[0m
+:::[1[33m | |/ / _ `/ / __/ _ \/ __/ // / _ \/ _ \/ -_) __/ (_-<  _\ \/ __/ __/ / _ \/ __/[0m
+:::[1[31m |___/\_,_/_/\__/_//_/_/  \_,_/_//_/_//_/\__/_/   /___/ /___/\__/_/ /_/ ___/\__/ [0m
+:::[1[31m                                                                     /_/         [0m
+
+for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
+
+:: Fetch the latest release info from GitHub
+curl -s https://api.github.com/repos/Valthrun/Valthrun/releases/latest > latest.json
+
+:: Check if the files exist
+if not exist "controller.exe" (
+    echo.
+    echo  controller.exe does not exist. Downloading...
+    echo.
+    goto :downloadController
+) else if not exist "valthrun-driver.sys" (
+    echo.
+    echo  valthrun-driver.sys does not exist. Downloading...
+    echo.
+    goto :downloadDriver
+) else if not exist "kdmapper.exe" (
+    echo.
+    echo  kdmapper.exe does not exist. Downloading...
+    echo.
+    goto :downloadKDMapper
+)
+
+:: Get the current version of the file
+for /f "tokens=2 delims==" %%a in ('wmic datafile where "name='%%cd:\=\\%%\\controller.exe'" get version /value ^| find "Version="') do (
+    set "currentVersion=%%a"
+)
+
+:: Get the latest version number from GitHub using PowerShell and remove "v" prefix
+for /f "delims=" %%i in ('powershell -Command "(Get-Content latest.json | ConvertFrom-Json | Select-Object -ExpandProperty tag_name).Replace('v', '')"') do set "latestVersion=%%i"
+
+:: Extract version numbers for comparison
+set "cleanCurrentVersion=!currentVersion:v=!"
+set "cleanLatestVersion=!latestVersion!"
+
+:: Compare version numbers
+if "!cleanCurrentVersion!" lss "!cleanLatestVersion!" (
+    echo New version available: v%latestVersion%
+    echo Downloading...
+
+    :: Download the new version
+    :downloadController
+
+    curl -s -L -o "controller.exe" "https://github.com/Valthrun/Valthrun/releases/latest/download/controller.exe"
+    echo  Download complete: controller.exe
+    echo.
+
+    :downloadDriver
+    curl -s -L -o "valthrun-driver.sys" "https://github.com/Valthrun/Valthrun/releases/latest/download/valthrun-driver.sys"
+    echo  Download complete: valthrun-driver.sys
+    echo.
+
+    :downloadKDMapper
+    curl -s -L -o "kdmapper.exe" "https://github.com/valthrunner/Valthrun/releases/latest/download/kdmapper.exe"
+    echo  Download complete: kdmapper.exe
+    echo.
+    
+    goto :cleanup
+
+) else (
+    echo.
+    echo  No new version available.
+    echo.
+)
+
+:cleanup
+
+del latest.json
+
+set "file=kdmapper_log.txt"
+
+:: Run valthrun-driver.sys with kdmapper
+kdmapper.exe valthrun-driver.sys > %file%
+
+set "str1=DriverEntry returned 0xcf000004"
+set "str2=DriverEntry returned 0x0"
+set "str3=Device\Nal is already in use"
+set "str4=Failed to register and start service for the vulnerable driver"
+
+findstr /m /C:"%str1%" "%file%" > nul
+if %errorlevel%==0 (
+    echo  Driver already loaded will continue. 
+    goto :continue
+)
+
+findstr /m /C:"%str2%" "%file%" > nul
+if %errorlevel%==0 (
+    echo  Driver successfully loaded will continue.
+    goto :continue
+)
+
+findstr /m /C:"%str3%" "%file%" > nul
+if %errorlevel%==0 (
+    echo  Device\Nal is already in use Error
+    echo.
+    echo  Downloading and running Fix...
+    curl -s -L -o "NalFix.exe" "https://github.com/VollRagm/NalFix/releases/latest/download/NalFix.exe"
+    start /wait NalFix.exe
+    goto :cleanup
+)
+
+findstr /m /C:"%str4%" "%file%" > nul
+if %errorlevel%==0 (
+    echo  Failed to register and start service for the vulnerable driver
+    echo.
+    echo  Trying to stop faceit, vanguard, etc. services
+    sc stop faceit
+    sc stop vgc
+    sc stop vgk
+    sc stop ESEADriver2
+    goto :cleanup
+)
+
+cls
+mode 120, 40
+echo.
+echo  Error: KDMapper return an Error
+echo  Read the wiki: wiki.valth.run
+echo  or join discord.gg/valthrun for help
+echo.
+echo  KDMapper output:
+echo.
+type kdmapper_log.txt
+pause
+exit /b
+
+:continue
+
+set "dllName=vulkan-1.dll"
+
+:: Define an array of potential source paths
+set "sourcePaths[0]=%PROGRAMFILES(X86)%\Microsoft\Edge\Application"
+set "sourcePaths[1]=%PROGRAMFILES(X86)%\Google\Chrome\Application"
+set "sourcePaths[2]=%LOCALAPPDATA%\Discord"
+set "sourcePaths[3]=%PROGRAMFILES(X86)%\BraveSoftware\Brave-Browser\Application"
+
+:: Iterate through the sourcePaths and check for the existence of the DLL file
+for /l %%i in (0,1,3) do (
+    set "sourcePath=!sourcePaths[%%i]!"
+    for /f "delims=" %%j in ('dir /b /s "!sourcePath!\!dllName!" 2^>nul') do (
+        set "sourceFile=%%j"
+        copy "!sourceFile!" "!dllName!" > nul
+    )
+)
+
+:: Check if cs2.exe is running
+tasklist /FI "IMAGENAME eq cs2.exe" 2>NUL | find /I /N "cs2.exe">NUL
+if "%ERRORLEVEL%"=="0" (
+    echo.
+    echo  CS2 is running. Valthrun will load.
+    echo.
+) else (
+    echo.
+    echo  CS2 is not running. Please wait it will start automatically.
+    start steam://run/730
+    echo.
+    echo  Waiting for CS2 to start...
+    :waitloop
+    tasklist /FI "IMAGENAME eq cs2.exe" 2>NUL | find /I /N "cs2.exe">NUL
+    if "%ERRORLEVEL%"=="1" (
+        timeout /t 1 /nobreak > NUL
+        goto waitloop
+    )
+    ping -n 15 localhost >NUL
+    echo.
+    echo  Valthrun will now load.
+    echo.
+)
+
+:: Create a scheduled task to run the program as the currently logged in user
+schtasks /Create /TN "ValthTask" /TR "%CD%/controller.exe" /SC ONCE /ST 00:00 /RU "%USERNAME%" /F > nul 2>&1
+:: Run the scheduled task
+schtasks /Run /TN "ValthTask" > nul
+:: Delete the scheduled task
+schtasks /Delete /TN "ValthTask" /F > nul
+
+:: End of script
+pause
+exit
