@@ -17,7 +17,7 @@ echo.
 for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
 
 :: Check if this script was called from another script
-if "%~1"=="run.bat" (
+if "%~1"=="run" (
     echo.
 ) else (
     echo  Please use run.bat.
