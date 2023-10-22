@@ -5,7 +5,7 @@ setlocal EnableDelayedExpansion
 set "scriptTitle=Valthrunner's Script v2.1"
 title %scriptTitle%
 
-mode 85, 25
+mode 85, 30
 
 echo.
 :::[1[37m  _   __     ____  __                              [31m/[37m       ____        _      __ [0m
@@ -61,8 +61,10 @@ set "cleanLatestVersion=!latestVersion!"
 
 :: Compare version numbers
 if "!cleanCurrentVersion!" lss "!cleanLatestVersion!" (
-    echo New version available: v%latestVersion%
-    echo Downloading...
+    echo  New version available: v%latestVersion%
+    echo.
+    echo  Downloading...
+    echo.
 
     :: Download the new version
     :downloadController
@@ -151,20 +153,22 @@ exit /b
 
 :continue
 
-set "dllName=vulkan-1.dll"
-
-:: Define an array of potential source paths
-set "sourcePaths[0]=%PROGRAMFILES(X86)%\Microsoft\Edge\Application"
-set "sourcePaths[1]=%PROGRAMFILES(X86)%\Google\Chrome\Application"
-set "sourcePaths[2]=%LOCALAPPDATA%\Discord"
-set "sourcePaths[3]=%PROGRAMFILES(X86)%\BraveSoftware\Brave-Browser\Application"
-
-:: Iterate through the sourcePaths and check for the existence of the DLL file
-for /l %%i in (0,1,3) do (
-    set "sourcePath=!sourcePaths[%%i]!"
-    for /f "delims=" %%j in ('dir /b /s "!sourcePath!\!dllName!" 2^>nul') do (
-        set "sourceFile=%%j"
-        copy "!sourceFile!" "!dllName!" > nul
+if not exist "vulkan-1.dll" (
+    set "dllName=vulkan-1.dll"
+    
+    :: Define an array of potential source paths
+    set "sourcePaths[0]=%PROGRAMFILES(X86)%\Microsoft\Edge\Application"
+    set "sourcePaths[1]=%PROGRAMFILES(X86)%\Google\Chrome\Application"
+    set "sourcePaths[2]=%LOCALAPPDATA%\Discord"
+    set "sourcePaths[3]=%PROGRAMFILES(X86)%\BraveSoftware\Brave-Browser\Application"
+    
+    :: Iterate through the sourcePaths and check for the existence of the DLL file
+    for /l %%i in (0,1,3) do (
+        set "sourcePath=!sourcePaths[%%i]!"
+        for /f "delims=" %%j in ('dir /b /s "!sourcePath!\!dllName!" 2^>nul') do (
+            set "sourceFile=%%j"
+            copy "!sourceFile!" "!dllName!" > nul
+        )
     )
 )
 
