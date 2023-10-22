@@ -24,11 +24,13 @@ Let's explore its fantastic features!
 
 2. **Run the Script** - Simply double-click the script (run.bat).
 
-3. **Configure Valthrun** - Press the PAUSE key and configure Valthrun to your liking (if that key is missing, check out: [Finding the PAUSE key](https://wiki.valth.run/#/030_troubleshooting/overlay/050_pause_key)).
+3. **Adjust Video Settings** - Ensure CS2 is in fullscreen windowed or windowed mode to see the overlay correctly.
 
-4. **Show Some Love** - Add a Star to this repo! 🌟
+4. **Configure Valthrun** - Press the PAUSE key and configure Valthrun to your liking (if that key is missing, check out: [Finding the PAUSE key](https://wiki.valth.run/#/030_troubleshooting/overlay/050_pause_key)).
 
-5. **Enjoy the Enhanced Valthrun Experience** 🎉! 
+5. **Show Some Love** - Add a Star to this repo! 🌟
+
+6. **Enjoy the Enhanced Valthrun Experience** 🎉! 
 
 ## Info 💡
 
