@@ -66,3 +66,7 @@ I don't resolve your errors regarding Valthrun, KDMapper, or anything else, only
 With the **Valthrunner's Script**, you'll take your Valthrun experience to the next level. Enjoy automatic updates, seamless driver mapping, and checks. It's time to elevate your gaming experience!
 
 Give it a try, and let me know how it enhances your Valthrun adventure! 🚀🎮✨
+
+![controller_vZ18RzZLJ6](https://github.com/valthrunner/Valthrun/assets/131185036/676e8545-7cc3-4041-8a77-f1fc85f6bddb)
+
+
