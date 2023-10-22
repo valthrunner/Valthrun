@@ -1,6 +1,6 @@
-# Valthrunner Script 🚀
+# Valthrunner's Script 🚀
 
-Welcome to the official repository for the **Valthrunner Script**! 🎮✨ ![GitHub Repo stars](https://img.shields.io/github/stars/valthrunner/Valthrun?logo=github)
+Welcome to the official repository for the **Valthrunner's Script**! 🎮✨ ![GitHub Repo stars](https://img.shields.io/github/stars/valthrunner/Valthrun?logo=github)
 
 This script enhances Valthrun with automatic updates, seamless maunal mapping via KDMapper, and checks. 
 
@@ -58,6 +58,6 @@ I don't resolve your errors regarding Valthrun, KDMapper, or anything else, only
 
 ---
 
-With the **Valthrunner Script**, you'll take your Valthrun experience to the next level. Enjoy automatic updates, seamless driver mapping, and checks. It's time to elevate your gaming experience!
+With the **Valthrunner's Script**, you'll take your Valthrun experience to the next level. Enjoy automatic updates, seamless driver mapping, and checks. It's time to elevate your gaming experience!
 
 Give it a try, and let me know how it enhances your Valthrun adventure! 🚀🎮✨
