@@ -16,22 +16,32 @@ echo.
 
 for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
 
+:: Check if this script was called from another script
+if "%~1"=="run.bat" (
+    echo.
+) else (
+    echo  Please use run.bat.
+    echo  Downloading run.bat...
+
+    curl -s -L -o "run.bat" "https://github.com/valthrunner/Valthrun/releases/latest/download/run.bat"
+
+    call run.bat
+    exit
+)
+
 :: Fetch the latest release info from GitHub
 curl -s https://api.github.com/repos/Valthrun/Valthrun/releases/latest > latest.json
 
 :: Check if the files exist
 if not exist "controller.exe" (
-    echo.
     echo  controller.exe does not exist. Downloading...
     echo.
     goto :downloadController
 ) else if not exist "valthrun-driver.sys" (
-    echo.
     echo  valthrun-driver.sys does not exist. Downloading...
     echo.
     goto :downloadDriver
 ) else if not exist "kdmapper.exe" (
-    echo.
     echo  kdmapper.exe does not exist. Downloading...
     echo.
     goto :downloadKDMapper
@@ -74,7 +84,6 @@ if "!cleanCurrentVersion!" lss "!cleanLatestVersion!" (
     goto :cleanup
 
 ) else (
-    echo.
     echo  No new version available.
     echo.
 )
