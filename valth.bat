@@ -106,8 +106,8 @@ kdmapper.exe valthrun-driver.sys > %file%
 set "str1=DriverEntry returned 0xcf000004"
 set "str2=DriverEntry returned 0x0"
 set "str3=Device\Nal is already in use"
-set "str4=Failed to register and start service for the vulnerable driver"
-set "str5=0xc0000603"
+set "str4=0xc0000603"
+set "str5=Failed to register and start service for the vulnerable driver"
 
 findstr /m /C:"%str1%" "%file%" > nul
 if %errorlevel%==0 (
@@ -133,6 +133,20 @@ if %errorlevel%==0 (
 
 findstr /m /C:"%str4%" "%file%" > nul
 if %errorlevel%==0 (
+    echo  Failed to register and start service for the vulnerable driver
+    echo.
+    echo  Applying win11 fix (restart is required afterwards)
+    echo.
+    echo  System rebooting in 15 Seconds
+    reg add "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\DeviceGuard" /v EnableVirtualizationBasedSecurity /t REG_DWORD /d 00000000 /f
+    bcdedit /set hypervisorlaunchtype off
+    reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\CI\Config" /v VulnerableDriverBlocklistEnable /t REG_DWORD /d 00000000 /f
+    shutdown.exe /r /t 15
+    goto :mapdriver
+)
+
+findstr /m /C:"%str5%" "%file%" > nul
+if %errorlevel%==0 (
     if "%XCOUNT%" == "1" (
       GOTO drivererror
     )
@@ -144,20 +158,6 @@ if %errorlevel%==0 (
     sc stop vgc
     sc stop vgk
     sc stop ESEADriver2
-    goto :mapdriver
-)
-
-findstr /m /C:"%str5%" "%file%" > nul
-if %errorlevel%==0 (
-    echo  Failed to register and start service for the vulnerable driver
-    echo.
-    echo  Applying win11 fix (restart is required afterwards)
-    echo.
-    echo  System rebooting in 15 Seconds
-    reg add "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\DeviceGuard" /v EnableVirtualizationBasedSecurity /t REG_DWORD /d 00000000 /f
-    bcdedit /set hypervisorlaunchtype off
-    reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\CI\Config" /v VulnerableDriverBlocklistEnable /t REG_DWORD /d 00000000 /f
-    shutdown.exe /r /t 15
     goto :mapdriver
 )
 
