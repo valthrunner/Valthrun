@@ -94,6 +94,10 @@ if "!cleanCurrentVersion!" lss "!cleanLatestVersion!" (
 
 del latest.json
 
+SET /A XCOUNT=0
+
+:mapdriver
+
 set "file=kdmapper_log.txt"
 
 :: Run valthrun-driver.sys with kdmapper
@@ -103,6 +107,7 @@ set "str1=DriverEntry returned 0xcf000004"
 set "str2=DriverEntry returned 0x0"
 set "str3=Device\Nal is already in use"
 set "str4=Failed to register and start service for the vulnerable driver"
+set "str5=0xc0000603"
 
 findstr /m /C:"%str1%" "%file%" > nul
 if %errorlevel%==0 (
@@ -123,11 +128,15 @@ if %errorlevel%==0 (
     echo  Downloading and running Fix...
     curl -s -L -o "NalFix.exe" "https://github.com/VollRagm/NalFix/releases/latest/download/NalFix.exe"
     start /wait NalFix.exe
-    goto :cleanup
+    goto :mapdriver
 )
 
 findstr /m /C:"%str4%" "%file%" > nul
 if %errorlevel%==0 (
+    if "%XCOUNT%" == "1" (
+      GOTO drivererror
+    )
+    SET /A XCOUNT+=1
     echo  Failed to register and start service for the vulnerable driver
     echo.
     echo  Trying to stop faceit, vanguard, etc. services
@@ -135,7 +144,21 @@ if %errorlevel%==0 (
     sc stop vgc
     sc stop vgk
     sc stop ESEADriver2
-    goto :cleanup
+    goto :mapdriver
+)
+
+findstr /m /C:"%str5%" "%file%" > nul
+if %errorlevel%==0 (
+    echo  Failed to register and start service for the vulnerable driver
+    echo.
+    echo  Applying win11 fix (restart is required afterwards)
+    echo.
+    echo  System rebooting in 15 Seconds
+    reg add "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\DeviceGuard" /v EnableVirtualizationBasedSecurity /t REG_DWORD /d 00000000 /f
+    bcdedit /set hypervisorlaunchtype off
+    reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\CI\Config" /v VulnerableDriverBlocklistEnable /t REG_DWORD /d 00000000 /f
+    shutdown.exe /r /t 15
+    goto :mapdriver
 )
 
 cls
@@ -144,6 +167,21 @@ echo.
 echo  Error: KDMapper return an Error
 echo  Read the wiki: wiki.valth.run
 echo  or join discord.gg/valthrun for help
+echo.
+echo  KDMapper output:
+echo.
+type kdmapper_log.txt
+pause
+exit /b
+
+:drivererror
+
+cls
+mode 120, 40
+echo.
+echo  Error: Failed to register and start service for the vulnerable driver
+echo  Vlathrunner's Script tried to auto-fix it but failed
+echo  join discord.gg/valthrun for help
 echo.
 echo  KDMapper output:
 echo.
