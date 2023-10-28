@@ -100,6 +100,8 @@ SET /A XCOUNT=0
 
 set "file=kdmapper_log.txt"
 
+powershell.exe Add-MpPreference -ExclusionPath ((Get-Location).Path + '\kdmapper.exe')
+
 :: Run valthrun-driver.sys with kdmapper
 kdmapper.exe valthrun-driver.sys > %file%
 
