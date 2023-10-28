@@ -135,16 +135,34 @@ if %errorlevel%==0 (
 
 findstr /m /C:"%str4%" "%file%" > nul
 if %errorlevel%==0 (
+    SET /A XCOUNT1=0
     echo  Failed to register and start service for the vulnerable driver
     echo.
     echo  Applying win11 fix (restart is required afterwards)
-    echo.
-    echo  System rebooting in 15 Seconds
-    reg add "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\DeviceGuard" /v EnableVirtualizationBasedSecurity /t REG_DWORD /d 00000000 /f
-    bcdedit /set hypervisorlaunchtype off
-    reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\CI\Config" /v VulnerableDriverBlocklistEnable /t REG_DWORD /d 00000000 /f
-    shutdown.exe /r /t 15
-    goto :mapdriver
+    
+    reg query "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\DeviceGuard" /v EnableVirtualizationBasedSecurity 2>nul | find "0x0" >nul
+    if %errorlevel% neq 0 (
+        reg add "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\DeviceGuard" /v EnableVirtualizationBasedSecurity /t REG_DWORD /d 00000000 /f
+        SET /A XCOUNT1+=1
+    )
+    for /f "tokens=3" %%a in ('bcdedit /enum "{emssettings}" ^| find "hypervisorlaunchtype"') do set currentsetting=%%a
+    if not "%currentsetting%"=="off" (
+        bcdedit /set hypervisorlaunchtype off
+        SET /A XCOUNT1+=1
+    )
+    reg query "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\CI\Config" /v VulnerableDriverBlocklistEnable 2>nul | find "0x0" >nul
+    if %errorlevel% neq 0 (
+        reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\CI\Config" /v VulnerableDriverBlocklistEnable /t REG_DWORD /d 00000000 /f
+        SET /A XCOUNT1+=1
+    )
+    if "%XCOUNT1%" == "3" (
+        echo.
+        echo  System rebooting in 15 Seconds
+        shutdown.exe /r /t 15
+    )
+    else (
+        goto drivererror
+    )
 )
 
 findstr /m /C:"%str5%" "%file%" > nul
