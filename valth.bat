@@ -127,7 +127,7 @@ set "file=kdmapper_log.txt"
 powershell.exe Add-MpPreference -ExclusionPath ((Get-Location).Path + '\kdmapper.exe')
 
 :: Run valthrun-driver.sys with kdmapper
-kdmapper.exe valthrun-driver.sys > %file%
+kdmapper.exe valthrun-driver.sys > %file% 2>&1
 
 set "str1=DriverEntry returned 0xcf000004"
 set "str2=DriverEntry returned 0x0"
