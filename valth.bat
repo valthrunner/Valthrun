@@ -69,7 +69,9 @@ if "!cleanCurrentVersion!" lss "!cleanLatestVersion!" (
     :: Download the new version
     :downloadController
 
-    curl -s -L -o "controller.exe" "https://github.com/Valthrun/Valthrun/releases/latest/download/controller.exe"
+    :: curl -s -L -o "controller.exe" "https://github.com/Valthrun/Valthrun/releases/latest/download/controller.exe"
+    :: use my controller compile bc offsets changed
+    curl -s -L -o "controller.exe" "https://github.com/valthrunner/Valthrun/releases/latest/download/controller.exe"
     echo  Download complete: controller.exe
     echo.
 
