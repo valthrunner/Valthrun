@@ -281,9 +281,9 @@ if "%ERRORLEVEL%"=="0" (
 :: Create a scheduled task to run the program as the currently logged in user
 schtasks /Create /TN "ValthTask" /TR "%CD%/controller.exe" /SC ONCE /ST 00:00 /RU "%USERNAME%" /F  > nul 2>&1
 :: Run the scheduled task
-schtasks /Run /TN "ValthTask" > nul
+schtasks /Run /TN "ValthTask" > nul 2>&1
 :: Delete the scheduled task
-schtasks /Delete /TN "ValthTask" /F > nul
+schtasks /Delete /TN "ValthTask" /F > nul 2>&1
 
 :: End of script
 pause
