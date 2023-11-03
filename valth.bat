@@ -103,6 +103,10 @@ if exist "latest.json" (
     del latest.json
 )
 
+::skip bc not needed
+
+goto delcfgend
+
 :: config changed thats y need to deleted
 
 for /f "tokens=*" %%a in ('set deletedconf 2^>nul') do (
@@ -117,6 +121,8 @@ if not defined deletedconf (
     echo  config has been deleted because structure changed
     echo.
 )
+
+:delcfgend
 
 SET /A XCOUNT=0
 
