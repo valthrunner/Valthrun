@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 
 :: Define script title
-set "scriptTitle=Valthrunner's Script v2.1"
+set "scriptTitle=Valthrunner's Script v2.2"
 title %scriptTitle%
 
 mode 85, 30
