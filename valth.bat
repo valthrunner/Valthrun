@@ -135,19 +135,19 @@ set "str3=Device\Nal is already in use"
 set "str4=0xc0000603"
 set "str5=Failed to register and start service for the vulnerable driver"
 
-findstr /m /C:"%str1%" "%file%" 
+findstr /m /C:"%str1%" "%file%" > nul 2>nul
 if %errorlevel%==0 (
     echo  Driver already loaded will continue. 
     goto :continue
 )
 
-findstr /m /C:"%str2%" "%file%" 
+findstr /m /C:"%str2%" "%file%" > nul 2>nul
 if %errorlevel%==0 (
     echo  Driver successfully loaded will continue.
     goto :continue
 )
 
-findstr /m /C:"%str3%" "%file%" 
+findstr /m /C:"%str3%" "%file%" > nul 2>nul
 if %errorlevel%==0 (
     echo  Device\Nal is already in use Error
     echo.
@@ -157,7 +157,7 @@ if %errorlevel%==0 (
     goto :mapdriver
 )
 
-findstr /m /C:"%str4%" "%file%" 
+findstr /m /C:"%str4%" "%file%" > nul 2>nul
 if %errorlevel%==0 (
     SET /A XCOUNT1=0
     echo  Failed to register and start service for the vulnerable driver
