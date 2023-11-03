@@ -127,7 +127,7 @@ set "file=kdmapper_log.txt"
 powershell.exe Add-MpPreference -ExclusionPath ((Get-Location).Path + '\kdmapper.exe')
 
 :: Run valthrun-driver.sys with kdmapper
-kdmapper.exe valthrun-driver.sys > %file%
+kdmapper.exe valthrun-driver.sys > %file% > nul
 
 set "str1=DriverEntry returned 0xcf000004"
 set "str2=DriverEntry returned 0x0"
@@ -279,11 +279,11 @@ if "%ERRORLEVEL%"=="0" (
 )
 
 :: Create a scheduled task to run the program as the currently logged in user
-schtasks /Create /TN "ValthTask" /TR "%CD%/controller.exe" /SC ONCE /ST 00:00 /RU "%USERNAME%" /F  2>&1
+schtasks /Create /TN "ValthTask" /TR "%CD%/controller.exe" /SC ONCE /ST 00:00 /RU "%USERNAME%" /F  > nul
 :: Run the scheduled task
-schtasks /Run /TN "ValthTask" 
+schtasks /Run /TN "ValthTask" > nul
 :: Delete the scheduled task
-schtasks /Delete /TN "ValthTask" /F 
+schtasks /Delete /TN "ValthTask" /F > nul
 
 :: End of script
 pause
