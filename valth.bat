@@ -99,7 +99,9 @@ if "!cleanCurrentVersion!" lss "!cleanLatestVersion!" (
 
 :cleanup
 
-del latest.json
+if exist "latest.json" (
+    del latest.json
+)
 
 :: config changed thats y need to deleted
 
@@ -107,7 +109,7 @@ for /f "tokens=*" %%a in ('set deletedconf 2^>nul') do (
     set "%%a"
 )
 if not defined deletedconf (
-    setx deletedconf 1 /M
+    setx deletedconf 1 /M 
 
     del config.yaml
 
@@ -133,19 +135,19 @@ set "str3=Device\Nal is already in use"
 set "str4=0xc0000603"
 set "str5=Failed to register and start service for the vulnerable driver"
 
-findstr /m /C:"%str1%" "%file%" > nul
+findstr /m /C:"%str1%" "%file%" 
 if %errorlevel%==0 (
     echo  Driver already loaded will continue. 
     goto :continue
 )
 
-findstr /m /C:"%str2%" "%file%" > nul
+findstr /m /C:"%str2%" "%file%" 
 if %errorlevel%==0 (
     echo  Driver successfully loaded will continue.
     goto :continue
 )
 
-findstr /m /C:"%str3%" "%file%" > nul
+findstr /m /C:"%str3%" "%file%" 
 if %errorlevel%==0 (
     echo  Device\Nal is already in use Error
     echo.
@@ -155,7 +157,7 @@ if %errorlevel%==0 (
     goto :mapdriver
 )
 
-findstr /m /C:"%str4%" "%file%" > nul
+findstr /m /C:"%str4%" "%file%" 
 if %errorlevel%==0 (
     SET /A XCOUNT1=0
     echo  Failed to register and start service for the vulnerable driver
@@ -187,7 +189,7 @@ if %errorlevel%==0 (
     )
 )
 
-findstr /m /C:"%str5%" "%file%" > nul
+findstr /m /C:"%str5%" "%file%" 
 if %errorlevel%==0 (
     if "%XCOUNT%" == "1" (
       GOTO drivererror
@@ -247,7 +249,7 @@ if not exist "vulkan-1.dll" (
         set "sourcePath=!sourcePaths[%%i]!"
         for /f "delims=" %%j in ('dir /b /s "!sourcePath!\!dllName!" 2^>nul') do (
             set "sourceFile=%%j"
-            copy "!sourceFile!" "!dllName!" > nul
+            copy "!sourceFile!" "!dllName!" 
         )
     )
 )
@@ -267,7 +269,7 @@ if "%ERRORLEVEL%"=="0" (
     :waitloop
     tasklist /FI "IMAGENAME eq cs2.exe" 2>NUL | find /I /N "cs2.exe">NUL
     if "%ERRORLEVEL%"=="1" (
-        timeout /t 1 /nobreak > NUL
+        timeout /t 1 /nobreak 
         goto waitloop
     )
     ping -n 15 localhost >NUL
@@ -277,11 +279,11 @@ if "%ERRORLEVEL%"=="0" (
 )
 
 :: Create a scheduled task to run the program as the currently logged in user
-schtasks /Create /TN "ValthTask" /TR "%CD%/controller.exe" /SC ONCE /ST 00:00 /RU "%USERNAME%" /F > nul 2>&1
+schtasks /Create /TN "ValthTask" /TR "%CD%/controller.exe" /SC ONCE /ST 00:00 /RU "%USERNAME%" /F  2>&1
 :: Run the scheduled task
-schtasks /Run /TN "ValthTask" > nul
+schtasks /Run /TN "ValthTask" 
 :: Delete the scheduled task
-schtasks /Delete /TN "ValthTask" /F > nul
+schtasks /Delete /TN "ValthTask" /F 
 
 :: End of script
 pause
