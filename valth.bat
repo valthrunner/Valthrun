@@ -29,6 +29,10 @@ if "%~1"=="run" (
     exit
 )
 
+goto download
+
+::this is skipped for now
+
 :: Fetch the latest release info from GitHub
 curl -s https://api.github.com/repos/Valthrun/Valthrun/releases/latest > latest.json
 
@@ -62,6 +66,7 @@ set "cleanLatestVersion=!latestVersion!"
 :: Compare version numbers
 if "!cleanCurrentVersion!" lss "!cleanLatestVersion!" (
     echo  New version available: v%latestVersion%
+    :download
     echo.
     echo  Downloading...
     echo.
@@ -95,6 +100,21 @@ if "!cleanCurrentVersion!" lss "!cleanLatestVersion!" (
 :cleanup
 
 del latest.json
+
+:: config changed thats y need to deleted
+
+for /f "tokens=*" %%a in ('set deletedconf 2^>nul') do (
+    set "%%a"
+)
+if not defined deletedconf (
+    setx deletedconf 1 /M
+
+    del config.yaml
+
+    echo.
+    echo  config has been deleted because structure changed
+    echo.
+)
 
 SET /A XCOUNT=0
 
