@@ -275,10 +275,10 @@ if "%ERRORLEVEL%"=="0" (
     :waitloop
     tasklist /FI "IMAGENAME eq cs2.exe" 2>NUL | find /I /N "cs2.exe">NUL
     if "%ERRORLEVEL%"=="1" (
-        timeout /t 1 /nobreak 
+        timeout /t 1 /nobreak >nul
         goto waitloop
     )
-    ping -n 15 localhost >NUL
+    ping -n 15 localhost >nul
     echo.
     echo  Valthrun will now load.
     echo.
