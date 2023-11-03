@@ -278,7 +278,7 @@ if "%ERRORLEVEL%"=="0" (
         timeout /t 1 /nobreak >nul
         goto waitloop
     )
-    ping -n 15 localhost >nul
+    ping -n 20 localhost >nul
     echo.
     echo  Valthrun will now load.
     echo.
