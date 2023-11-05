@@ -2,8 +2,12 @@
 setlocal EnableDelayedExpansion
 
 :: Define script title
-set "scriptTitle=Valthrunner's Script v2.2"
+set "scriptTitle=Valthrunner's Script v2.1"
 title %scriptTitle%
+
+:: Check for administrative privileges and request if necessary
+set "params=%*"
+cd /d "%~dp0" && ( if exist "%temp%\getadmin.vbs" del "%temp%\getadmin.vbs" ) && fsutil dirty query %systemdrive% 1>nul 2>nul || (  echo Set UAC = CreateObject^("Shell.Application"^) : UAC.ShellExecute "cmd.exe", "/k cd ""%~sdp0"" && ""%~s0"" %params%", "", "runas", 1 >> "%temp%\getadmin.vbs" && "%temp%\getadmin.vbs" && exit /B )
 
 mode 85, 30
 
@@ -13,23 +17,6 @@ echo.
 :::[1[33m | |/ / _ `/ / __/ _ \/ __/ // / _ \/ _ \/ -_) __/ (_-<  _\ \/ __/ __/ / _ \/ __/[0m
 :::[1[31m |___/\_,_/_/\__/_//_/_/  \_,_/_//_/_//_/\__/_/   /___/ /___/\__/_/ /_/ ___/\__/ [0m
 :::[1[31m                                                                     /_/         [0m
-
-for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
-
-:: Check if this script was called from another script
-if "%~1"=="run" (
-    echo.
-) else (
-    echo  Please use run.bat.
-    echo  Downloading run.bat...
-
-    curl -s -L -o "run.bat" "https://github.com/valthrunner/Valthrun/releases/latest/download/run.bat"
-
-    call run.bat
-    exit
-)
-
-goto download
 
 ::this is skipped for now
 
@@ -292,5 +279,5 @@ schtasks /Run /TN "ValthTask" > nul 2>nul
 schtasks /Delete /TN "ValthTask" /F > nul 2>nul
 
 :: End of script
-pause
+timeout /t 5 /nobreak >nul
 exit
