@@ -43,7 +43,31 @@ Let's explore its fantastic features!
 
 ## Share Radar 📡
 
-WIP
+### Port Forwarding
+
+Port forwarding is a technique that is used to allow external devices access to computers services on private networks. Here's a simple guide on how to set it up:
+
+1. **Understand how it works**: You can find numerous resources online to understand how port forwarding works for your specific router model. You can either use google or look for tutorials on YouTube.
+
+2. **Use a VPN**: Some VPNs offer port-forwarding features, allowing you to avoid using your real IP address.
+
+3. **Forward the port**: Forward port 6969 on your router.
+
+4. **Share your IP**: Share your public IP address (or VPN Servers IP) with your friends in the following format: `http://<yourpublicipv4>:6969/`
+
+### Tunnel Service
+
+If you're looking for an ipless version, tunnel service are the way to go, here are some options you can consider:
+
+Don't forget to let the tunnel point at `http://127.0.0.1:6969`
+
+- [**Loophole**](https://loophole.cloud/): This service requires an account for usage.
+
+- [**Ngrok**](https://ngrok.com/): This service also requires an account for usage.
+
+- [**localhost.run**](http://localhost.run/): Some users have reported issues with this service.
+
+- [**Pagekite**](http://pagekite.net/): This is a more advanced option and requires Python. It also requires an account for usage.
 
 ## Links 🔗
 
