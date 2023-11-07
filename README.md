@@ -55,6 +55,8 @@ Port forwarding is a technique that is used to allow external devices access to 
 
 4. **Share your IP**: Share your public IP address (or VPN Servers IP) with your friends in the following format: `http://<yourpublicipv4>:6969/`
 
+5. **DNS**: Optionally user something like DuckDNS or No IP if your IP changes a lot.
+
 ### Tunnel Service
 
 If you're looking for an ipless version, tunnel service are the way to go, here are some options you can consider:
