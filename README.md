@@ -41,6 +41,10 @@ Let's explore its fantastic features!
 - If you encounter an error, consult the [official troubleshooting guide](https://wiki.valth.run/#/) for DIY issue resolution.
 - If you can't resolve the issue on your own, join the [Discord](https://discord.gg/ecKbpAPW5T) for community support.
 
+## Share Radar 📡
+
+WIP
+
 ## Links 🔗
 
 - **Official Repo: [Valthrun](https://github.com/WolverinDEV/Valthrun/)** [![GitHub Stars](https://img.shields.io/github/stars/WolverinDEV/Valthrun.svg?style=social&label=Star)](https://github.com/WolverinDEV/Valthrun/)
