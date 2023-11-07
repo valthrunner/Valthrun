@@ -20,13 +20,22 @@ for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
 if "%~1"=="run" (
     echo.
 ) else (
-    echo  Please use run.bat.
-    echo  Downloading run.bat...
+    if "%~1"=="run_radar" (
+        SET /A RADAR=1
+        echo.
+        echo  unsing radar version of valthrun!
+        echo.
+    ) else (
+        echo  Please use run.bat.
+        echo  Downloading run.bat...
+        curl -s -L -o "run.bat" "https://github.com/valthrunner/Valthrun/releases/latest/download/run.bat"
+        call run.bat
+        exit
+    )
+)
 
-    curl -s -L -o "run.bat" "https://github.com/valthrunner/Valthrun/releases/latest/download/run.bat"
-
-    call run.bat
-    exit
+if "%RADAR%" == "1" (
+    mode 85, 40
 )
 
 goto download
@@ -74,11 +83,17 @@ if "!cleanCurrentVersion!" lss "!cleanLatestVersion!" (
     :: Download the new version
     :downloadController
 
+    if "%RADAR%" == "1" (
+        curl -s -L -o "controller.exe" "https://github.com/valthrunner/Valthrun/releases/latest/download/controller_radar.exe"
+        echo  Download complete: controller.exe (radar version!)
+    )
+    else (
     curl -s -L -o "controller.exe" "https://github.com/Valthrun/Valthrun/releases/latest/download/controller.exe"
     :: dont use my controller compile bc offsets changed (but still in here if needed one day)
     :: curl -s -L -o "controller.exe" "https://github.com/valthrunner/Valthrun/releases/latest/download/controller.exe"
     echo  Download complete: controller.exe
     echo.
+    )
 
     :downloadDriver
     curl -s -L -o "valthrun-driver.sys" "https://github.com/Valthrun/Valthrun/releases/latest/download/valthrun-driver.sys"
@@ -281,6 +296,15 @@ if "%ERRORLEVEL%"=="0" (
     ping -n 20 localhost >nul
     echo.
     echo  Valthrun will now load.
+    echo.
+)
+
+if "%RADAR%" == "1" (
+    echo  Running [93mradar[0m version of controller compiled by valthrunner!
+    echo.
+    echo  To use the radar locally open [96mhttp://localhost:6969[0m
+    echo.
+    echo  To share it to you friends take a look here [92mhttps://shorturl.at/fgpyI[0m
     echo.
 )
 
