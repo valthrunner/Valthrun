@@ -12,6 +12,8 @@ echo.
 :::[1[31m |___/\_,_/_/\__/_//_/_/  \_,_/_//_/_//_/\__/_/   /___/ /___/\__/_/ /_/ ___/\__/ [0m
 :::[1[31m                                                                     /_/         [0m
 
+for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
+
 :: Check if this script was called from another script
 if "%~1"=="run" (
     echo.
@@ -31,8 +33,6 @@ if "%~1"=="run" (
         exit
     )
 )
-
-for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
 
 goto download
 
