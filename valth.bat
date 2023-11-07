@@ -5,15 +5,6 @@ setlocal EnableDelayedExpansion
 set "scriptTitle=Valthrunner's Script v2.2"
 title %scriptTitle%
 
-echo.
-:::[1[37m  _   __     ____  __                              [31m/[37m       ____        _      __ [0m
-:::[1[93m | | / /__ _/ / /_/ /  ______ _____  ___  ___ ____  ___   / __/_______(_)__  / /_[0m
-:::[1[33m | |/ / _ `/ / __/ _ \/ __/ // / _ \/ _ \/ -_) __/ (_-<  _\ \/ __/ __/ / _ \/ __/[0m
-:::[1[31m |___/\_,_/_/\__/_//_/_/  \_,_/_//_/_//_/\__/_/   /___/ /___/\__/_/ /_/ ___/\__/ [0m
-:::[1[31m                                                                     /_/         [0m
-
-for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
-
 :: Check if this script was called from another script
 if "%~1"=="run" (
     echo.
@@ -21,8 +12,6 @@ if "%~1"=="run" (
     if "%~1"=="run_radar" (
         SET /A RADAR=1
         mode 85, 40
-        echo.
-        echo  unsing radar version of valthrun!
         echo.
     ) else (
         mode 85, 30
@@ -32,6 +21,20 @@ if "%~1"=="run" (
         call run.bat
         exit
     )
+)
+
+echo.
+:::[1[37m  _   __     ____  __                              [31m/[37m       ____        _      __ [0m
+:::[1[93m | | / /__ _/ / /_/ /  ______ _____  ___  ___ ____  ___   / __/_______(_)__  / /_[0m
+:::[1[33m | |/ / _ `/ / __/ _ \/ __/ // / _ \/ _ \/ -_) __/ (_-<  _\ \/ __/ __/ / _ \/ __/[0m
+:::[1[31m |___/\_,_/_/\__/_//_/_/  \_,_/_//_/_//_/\__/_/   /___/ /___/\__/_/ /_/ ___/\__/ [0m
+:::[1[31m                                                                     /_/         [0m
+
+for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
+
+if "%RADAR%" == "1" (
+echo  unsing radar version of valthrun!
+echo.
 )
 
 goto download
