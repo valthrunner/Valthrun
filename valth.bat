@@ -5,7 +5,25 @@ setlocal EnableDelayedExpansion
 set "scriptTitle=Valthrunner's Script v2.2"
 title %scriptTitle%
 
-mode 85, 30
+:: Check if this script was called from another script
+if "%~1"=="run" (
+    echo.
+) else (
+    if "%~1"=="run_radar" (
+        SET /A RADAR=1
+        mode 85, 40
+        echo.
+        echo  unsing radar version of valthrun!
+        echo.
+    ) else (
+        mode 85, 30
+        echo  Please use run.bat.
+        echo  Downloading run.bat...
+        curl -s -L -o "run.bat" "https://github.com/valthrunner/Valthrun/releases/latest/download/run.bat"
+        call run.bat
+        exit
+    )
+)
 
 echo.
 :::[1[37m  _   __     ____  __                              [31m/[37m       ____        _      __ [0m
@@ -15,28 +33,6 @@ echo.
 :::[1[31m                                                                     /_/         [0m
 
 for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
-
-:: Check if this script was called from another script
-if "%~1"=="run" (
-    echo.
-) else (
-    if "%~1"=="run_radar" (
-        SET /A RADAR=1
-        echo.
-        echo  unsing radar version of valthrun!
-        echo.
-    ) else (
-        echo  Please use run.bat.
-        echo  Downloading run.bat...
-        curl -s -L -o "run.bat" "https://github.com/valthrunner/Valthrun/releases/latest/download/run.bat"
-        call run.bat
-        exit
-    )
-)
-
-if "%RADAR%" == "1" (
-    mode 85, 40
-)
 
 goto download
 
