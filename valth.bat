@@ -82,8 +82,7 @@ if "!cleanCurrentVersion!" lss "!cleanLatestVersion!" (
     if "%RADAR%" == "1" (
         curl -s -L -o "controller.exe" "https://github.com/valthrunner/Valthrun/releases/latest/download/controller_radar.exe"
         echo  Download complete: controller.exe (radar version!)
-    )
-    else (
+    ) else (
     curl -s -L -o "controller.exe" "https://github.com/Valthrun/Valthrun/releases/latest/download/controller.exe"
     :: dont use my controller compile bc offsets changed (but still in here if needed one day)
     :: curl -s -L -o "controller.exe" "https://github.com/valthrunner/Valthrun/releases/latest/download/controller.exe"
