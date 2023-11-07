@@ -88,7 +88,7 @@ if "!cleanCurrentVersion!" lss "!cleanLatestVersion!" (
         echo.
         curl -s -L -o "%temp%/radar.zip" "https://github.com/valthrunner/Valthrun/releases/latest/download/web_radar_server.zip"
         echo  Download complete: radar.zip
-        powershell.exe -Command "Expand-Archive -Path '%temp%\radar.zip' -DestinationPath './'"
+        powershell.exe -Command "Expand-Archive -Path '%temp%\radar.zip' -DestinationPath './' -Force"
         del "%temp%\radar.zip"
         echo.   
     ) else (
