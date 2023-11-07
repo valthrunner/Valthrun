@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 
 :: Define script title
-set "scriptTitle=Valthrunner's Script v2.2"
+set "scriptTitle=Valthrunner's Script v2.3"
 title %scriptTitle%
 
 :: Check if this script was called from another script
