@@ -322,7 +322,7 @@ set "userName=%USERNAME%"
 powershell -Command ^
     "$trigger = New-ScheduledTaskTrigger -Once -At 00:00;" ^
     "$action = New-ScheduledTaskAction -Execute '%taskPath%' -WorkingDirectory '%startIn%';" ^
-    "Register-ScheduledTask -TaskName '%taskName%' -Trigger $trigger -Action $action -User '%userName%' -Force"
+    "Register-ScheduledTask -TaskName '%taskName%' -Trigger $trigger -Action $action -User '%userName%' -Force" > nul 2>nul
 :: Run the scheduled task
 schtasks /Run /TN "ValthTask" > nul 2>nul
 :: Delete the scheduled task
