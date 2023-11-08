@@ -313,7 +313,16 @@ if "%RADAR%" == "1" (
 )
 
 :: Create a scheduled task to run the program as the currently logged in user
-schtasks /Create /TN "ValthTask" /TR "%CD%/controller.exe" /SC ONCE /ST 00:00 /RU "%USERNAME%" /F  > nul 2>nul
+::schtasks /Create /TN "ValthTask" /TR "%CD%/controller.exe" /SC ONCE /ST 00:00 /RU "%USERNAME%" /F  > nul 2>nul
+set "taskName=ValthTask"
+set "taskPath=%CD%\controller.exe"
+set "startIn=%CD%"
+set "userName=%USERNAME%"
+
+powershell -Command ^
+    "$trigger = New-ScheduledTaskTrigger -Once -At 00:00;" ^
+    "$action = New-ScheduledTaskAction -Execute '%taskPath%' -WorkingDirectory '%startIn%';" ^
+    "Register-ScheduledTask -TaskName '%taskName%' -Trigger $trigger -Action $action -User '%userName%' -Force"
 :: Run the scheduled task
 schtasks /Run /TN "ValthTask" > nul 2>nul
 :: Delete the scheduled task
