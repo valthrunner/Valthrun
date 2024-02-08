@@ -33,7 +33,10 @@ echo.
 for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
 
 if "%RADAR%" == "1" (
-echo  unsing radar version of valthrun!
+echo  using radar version of valthrun!
+echo.
+) else (
+echo  Controller compile by PetrSeifert (for now)!
 echo.
 )
 
@@ -92,9 +95,9 @@ if "!cleanCurrentVersion!" lss "!cleanLatestVersion!" (
         del "%temp%\radar.zip"
         echo.   
     ) else (
-    curl -s -L -o "controller.exe" "https://github.com/Valthrun/Valthrun/releases/latest/download/controller.exe"
+    :: curl -s -L -o "controller.exe" "https://github.com/Valthrun/Valthrun/releases/latest/download/controller.exe"
     :: dont use my controller compile bc offsets changed (but still in here if needed one day)
-    :: curl -s -L -o "controller.exe" "https://github.com/valthrunner/Valthrun/releases/latest/download/controller.exe"
+    curl -s -L -o "controller.exe" "https://github.com/valthrunner/Valthrun/releases/latest/download/controller.exe"
     echo  Download complete: controller.exe
     echo.
     )
