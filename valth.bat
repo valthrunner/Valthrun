@@ -36,7 +36,7 @@ if "%RADAR%" == "1" (
 echo  using radar version of valthrun!
 echo.
 ) else (
-echo  Controller compile by PetrSeifert (for now)!
+echo  Controller compile by PetrSeifert (for now)^!
 echo.
 )
 
