@@ -43,7 +43,7 @@ call :downloadFile "%baseDownloadUrl%valthrun-driver.sys" "valthrun-driver.sys"
 call :downloadFile "%baseRunnerDownloadUrl%kdmapper.exe" "kdmapper.exe"
 :: Handle radar version
 if "%mode%" == "1" (
-    call :downloadFile "%baseDownloadUrl%valthrun-driver.sys" "radar-client.exe"
+    call :downloadFile "%baseDownloadUrl%radar-client.exe" "radar-client.exe"
 )
 
 :cleanup
