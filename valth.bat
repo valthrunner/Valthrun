@@ -2,8 +2,7 @@
 setlocal EnableDelayedExpansion
 
 :: Define script title and set initial variables
-set "title=Valthrunner's Script v3.0"
-title %title%
+title "Valthrunner's Script v3.0"
 set "mode=0"
 
 :: Set mode based on arguments
@@ -11,7 +10,7 @@ if "%~1"=="run" (
     echo.
 ) else if "%~1"=="run_radar" (
     set "mode=1"
-    set "title=Valthrunner's Script v3.0 Radar Version ;)"
+    title "Valthrunner's Script v3.0 Radar Version ;)"
     mode 85, 40
     echo.
 ) else (
