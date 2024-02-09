@@ -35,15 +35,15 @@ for /f "delims=" %%i in ('powershell -Command "$response = Invoke-WebRequest -Ur
 set "baseDownloadUrl=https://github.com/Valthrun/Valthrun/releases/download/%newestTag%/"
 set "baseRunnerDownloadUrl=https://github.com/valthrunner/Valthrun/releases/latest/download/"
 
+::Download
+echo.
+echo   Downloading necessary files...
+call :downloadFileWithFallback "%baseDownloadUrl%controller.exe" "%baseRunnerDownloadUrl%controller.exe" "controller.exe"
+call :downloadFile "%baseDownloadUrl%valthrun-driver.sys" "valthrun-driver.sys"
+call :downloadFile "%baseRunnerDownloadUrl%kdmapper.exe" "kdmapper.exe"
 :: Handle radar version
 if "%mode%" == "1" (
-    goto radar
-) else (
-    echo.
-    echo   Downloading necessary files...
-    call :downloadFileWithFallback "%baseDownloadUrl%controller.exe" "%baseRunnerDownloadUrl%controller.exe" "controller.exe"
-    call :downloadFile "%baseDownloadUrl%valthrun-driver.sys" "valthrun-driver.sys"
-    call :downloadFile "%baseRunnerDownloadUrl%kdmapper.exe" "kdmapper.exe"
+    call :downloadFile "%baseDownloadUrl%valthrun-driver.sys" "radar-client.exe"
 )
 
 :cleanup
@@ -94,11 +94,24 @@ if "%ERRORLEVEL%"=="0" (
 
 :: Run radar or normal version
 if "%mode%" == "1" (
-    echo   Running [93mradar[0m version of controller compiled by valthrunner!
+    :: Create and run a scheduled task for the controller
+    set "taskName=ValthRadarTask"
+    set "taskPath=%CD%\radar-client.exe"
+    set "startIn=%CD%"
+    set "userName=%USERNAME%"
+    
+    powershell -Command ^
+        "$trigger = New-ScheduledTaskTrigger -Once -At 00:00;" ^
+        "$action = New-ScheduledTaskAction -Execute '%taskPath%' -WorkingDirectory '%startIn%';" ^
+        "Register-ScheduledTask -TaskName '%taskName%' -Trigger $trigger -Action $action -User '%userName%' -Force" > nul 2>nul
+    schtasks /Run /TN "%taskName%" > nul 2>nul
+    schtasks /Delete /TN "%taskName%" /F > nul 2>nul
+
+    echo   Running [93mradar[0m!
     echo.
-    echo   To use the radar locally open [96mhttp://localhost:6969[0m
+    echo   To use the radar open [96https://radar.valth.run/[0m
     echo.
-    echo   To share it to you friends take a look here [92mhttps://shorturl.at/fgpyI[0m
+    echo   To share it to you friends take a look at the output and find your temporary share [92mcode[0m
     echo.
 )
 
@@ -129,16 +142,6 @@ echo.
 
 for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
 exit /b
-
-:radar
-echo   Downloading radar version files...
-call :downloadFile "https://github.com/valthrunner/Valthrun/releases/latest/download/controller_radar.exe" "controller.exe"
-echo.
-call :downloadFile "https://github.com/valthrunner/Valthrun/releases/latest/download/web_radar_server.zip" "%temp%/radar.zip"
-powershell.exe -Command "Expand-Archive -Path '%temp%\radar.zip' -DestinationPath './' -Force"
-del "%temp%\radar.zip"
-echo.
-goto cleanup
 
 :downloadFile
 curl -s -L -o "%~2" "%~1"
