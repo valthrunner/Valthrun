@@ -192,7 +192,7 @@ mode 120, 40
 echo.
 echo   Error: KDMapper returned an error
 echo   Read the wiki: wiki.valth.run
-echo   or join discord.gg/valthrun for help
+echo   or join discord.gg/ecKbpAPW5T for help
 echo.
 echo   KDMapper output:
 type kdmapper_log.txt
@@ -204,7 +204,7 @@ cls
 mode 120, 40
 echo.
 echo   %errAutoFixFailed%
-echo   Join discord.gg/valthrun for help
+echo   Join discord.gg/ecKbpAPW5T for help
 echo.
 echo   KDMapper output:
 type kdmapper_log.txt
