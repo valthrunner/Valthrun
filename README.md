@@ -43,33 +43,15 @@ Let's explore its fantastic features!
 
 ## Share Radar 📡
 
-### Port Forwarding
+1. **Download** [here](https://github.com/Valthrun/Valthrun/releases/download/v0.4.1/radar-client.exe)
 
-Port forwarding is a technique that is used to allow external devices access to computers services on private networks. Here's a simple guide on how to set it up:
+2. **Run** the .exe
 
-1. **Understand how it works**: You can find numerous resources online to understand how port forwarding works for your specific router model. You can either use google or look for tutorials on YouTube.
+3. **Open** https://radar.valth.run/ and enter the code you got
 
-2. **Use a VPN**: Some VPNs offer port-forwarding features, allowing you to avoid using your real IP address.
+4. **Send** the link to your friends!
 
-3. **Forward the port**: Forward port 6969 on your router.
-
-4. **Share your IP**: Share your public IP address (or VPN Servers IP) with your friends in the following format: `http://<yourpublicipv4>:6969/`
-
-5. **DNS**: Optionally user something like DuckDNS or No IP if your IP changes a lot.
-
-### Tunnel Service
-
-If you're looking for an ipless version, tunnel service are the way to go, here are some options you can consider:
-
-Don't forget to let the tunnel point at `http://127.0.0.1:6969`
-
-- [**Loophole**](https://loophole.cloud/): This service requires an account for usage.
-
-- [**Ngrok**](https://ngrok.com/): This service also requires an account for usage.
-
-- [**localhost.run**](http://localhost.run/): Some users have reported issues with this service.
-
-- [**Pagekite**](http://pagekite.net/): This is a more advanced option and requires Python. It also requires an account for usage.
+5. **Enjoy the Enhanced Valthrun Experience** 🎉! 
 
 ## Links 🔗
 
