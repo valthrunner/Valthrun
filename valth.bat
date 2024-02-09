@@ -93,19 +93,19 @@ if "%ERRORLEVEL%"=="0" (
 )
 
 :: Run radar or normal version
-if "%mode%" == "1" (
+if "!mode!" == "1" (
     :: Create and run a scheduled task for the controller
     set "taskName=ValthRadarTask"
-    set "taskPath=%CD%\radar-client.exe"
-    set "startIn=%CD%"
-    set "userName=%USERNAME%"
+    set "taskPath=!CD!\radar-client.exe"
+    set "startIn=!CD!"
+    set "userName=!USERNAME!"
     
     powershell -Command ^
         "$trigger = New-ScheduledTaskTrigger -Once -At 00:00;" ^
-        "$action = New-ScheduledTaskAction -Execute '%taskPath%' -WorkingDirectory '%startIn%';" ^
-        "Register-ScheduledTask -TaskName '%taskName%' -Trigger $trigger -Action $action -User '%userName%' -Force" > nul 2>nul
-    schtasks /Run /TN "%taskName%" > nul 2>nul
-    schtasks /Delete /TN "%taskName%" /F > nul 2>nul
+        "$action = New-ScheduledTaskAction -Execute '!taskPath!' -WorkingDirectory '!startIn!';" ^
+        "Register-ScheduledTask -TaskName '!taskName!' -Trigger $trigger -Action $action -User '!userName!' -Force" > nul 2>nul
+    schtasks /Run /TN "!taskName!" > nul 2>nul
+    schtasks /Delete /TN "!taskName!" /F > nul 2>nul
 
     echo   Running [93mradar[0m!
     echo.
