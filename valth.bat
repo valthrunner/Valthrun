@@ -11,7 +11,7 @@ if "%~1"=="run" (
 ) else if "%~1"=="run_radar" (
     set "mode=1"
     title "Valthrunner's Script v3.0 Radar Version ;)"
-    mode 85, 40
+    mode 95, 40
     echo.
 ) else (
     mode 85, 30
