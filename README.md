@@ -43,9 +43,9 @@ Let's explore its fantastic features!
 
 ## Share Radar 📡
 
-1. **Download** [here](https://github.com/Valthrun/Valthrun/releases/download/v0.4.1/radar-client.exe)
+1. **Download** [here](https://github.com/valthrunner/Valthrun/releases/latest/download/run_radar.bat)
 
-2. **Run** the .exe
+2. **Run the Script** - Simply double-click the script (run_radar.bat).
 
 3. **Open** https://radar.valth.run/ and enter the code you got
 
