@@ -2,8 +2,15 @@
 setlocal EnableDelayedExpansion
 
 :: Define script title
-set "scriptTitle=Valthrunner's Script Loader Script"
+set "scriptTitle=Valthrunner's Radar Script Loader Script obsolete!"
 title %scriptTitle%
+
+echo this is obsolete
+echo this is obsolete
+echo this is obsolete
+echo this is obsolete
+echo this is obsolete
+echo this is obsolete
 
 :: Check for administrative privileges and request if necessary
 set "params=%*"
