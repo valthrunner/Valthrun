@@ -32,10 +32,10 @@ for /f "delims=" %%i in ('powershell -Command "$response = Invoke-WebRequest -Ur
 
 :: Fetch the newest controller name using PowerShell
 for /f "delims=" %%i in ('powershell -Command "$tag='%newestTag%'; $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; $controllerAsset=$latestRelease.assets | Where-Object { $_.name -like '*controller*.exe' } | Select-Object -First 1; Write-Output $controllerAsset.browser_download_url"') do set "controllerUrl=%%i"
-
+echo %controllerUrl%
 :: Fetch the newest radar name using PowerShell
 for /f "delims=" %%i in ('powershell -Command "$tag='%newestTag%'; $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; $radarClientAsset=$latestRelease.assets | Where-Object { $_.name -like '*radar*client*.exe' } | Select-Object -First 1; Write-Output $radarClientAsset.browser_download_url"') do set "radarClientUrl=%%i"
-
+echo %radarClientUrl%
 :: Construct the download URLs based on the newest tag
 set "baseDownloadUrl=https://github.com/Valthrun/Valthrun/releases/download/%newestTag%/"
 set "baseRunnerDownloadUrl=https://github.com/valthrunner/Valthrun/releases/latest/download/"
