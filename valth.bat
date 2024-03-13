@@ -30,6 +30,11 @@ call :displayHeader
 set "tagsUrl=https://api.github.com/repos/Valthrun/Valthrun/tags"
 for /f "delims=" %%i in ('powershell -Command "$response = Invoke-WebRequest -Uri '%tagsUrl%' -UseBasicParsing; $tags = $response.Content | ConvertFrom-Json; if ($tags.Count -gt 0) { $tags[0].name } else { 'No tags found' }"') do set "newestTag=%%i"
 
+:: Fetch the newest controller name using PowerShell
+for /f "delims=" %%i in ('powershell -Command "$tag='%newestTag%'; $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; $controllerAsset=$latestRelease.assets | Where-Object { $_.name -like '*controller*.exe' } | Select-Object -First 1; Write-Output $controllerAsset.browser_download_url"') do set "controllerUrl=%%i"
+
+:: Fetch the newest radar name using PowerShell
+for /f "delims=" %%i in ('powershell -Command "$tag='%newestTag%'; $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; $radarClientAsset=$latestRelease.assets | Where-Object { $_.name -like '*radar*client*.exe' } | Select-Object -First 1; Write-Output $radarClientAsset.browser_download_url"') do set "radarClientUrl=%%i"
 
 :: Construct the download URLs based on the newest tag
 set "baseDownloadUrl=https://github.com/Valthrun/Valthrun/releases/download/%newestTag%/"
@@ -38,12 +43,12 @@ set "baseRunnerDownloadUrl=https://github.com/valthrunner/Valthrun/releases/late
 ::Download
 echo.
 echo   Downloading necessary files...
-call :downloadFileWithFallback "%baseDownloadUrl%controller.exe" "%baseRunnerDownloadUrl%controller.exe" "controller.exe"
+call :downloadFileWithFallback "%controllerUrl%" "%baseRunnerDownloadUrl%controller.exe" "controller.exe"
 call :downloadFile "%baseDownloadUrl%valthrun-driver.sys" "valthrun-driver.sys"
 call :downloadFile "%baseRunnerDownloadUrl%kdmapper.exe" "kdmapper.exe"
 :: Handle radar version
 if "%mode%" == "1" (
-    call :downloadFile "%baseDownloadUrl%radar-client.exe" "radar-client.exe"
+    call :downloadFile "%radarClientUrl%" "radar-client.exe"
 )
 
 :cleanup
