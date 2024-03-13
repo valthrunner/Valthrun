@@ -43,15 +43,7 @@ Let's explore its fantastic features!
 
 ## Share Radar 📡
 
-1. **Download** [here](https://github.com/valthrunner/Valthrun/releases/latest/download/run_radar.bat)
-
-2. **Run the Script** - Simply double-click the script (run_radar.bat).
-
-3. **Open** https://radar.valth.run/ and enter the code you got
-
-4. **Send** the link to your friends!
-
-5. **Enjoy the Enhanced Valthrun Experience** 🎉! 
+**Enjoy the built in Valthrun sharable web radar by running run.bat!** 🎉! 
 
 ## Links 🔗
 
