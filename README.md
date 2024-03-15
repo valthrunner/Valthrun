@@ -43,7 +43,7 @@ Let's explore its fantastic features!
 
 ## Share Radar 📡
 
-**Enjoy the built in Valthrun sharable web radar by running run.bat!** 🎉! 
+**Enjoy the built in Valthrun sharable web radar by running run.bat 🎉!**
 
 ## Links 🔗
 
