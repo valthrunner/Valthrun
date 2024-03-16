@@ -113,7 +113,7 @@ if "!mode!" == "1" (
     echo.
     echo   To share it with your friends, find your temporary share [92mcode[0m in the output.
 ) else (
-    controller.exe
+    start controller.exe
 )
 
 pause
