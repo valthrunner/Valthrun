@@ -2,15 +2,20 @@
 setlocal EnableDelayedExpansion
 
 :: Define script title and set initial variables
-title "Valthrunner's Script v3.1"
+set "script_version=3.1"
+title "Valthrunner's Script v!script_version!"
 set "mode=0"
 
 :: Set mode based on arguments
 if "%~1"=="run" (
     echo.
-) else if "%~1"=="run_radar" (
+) else if "%~1"=="run_userperms" (
     set "mode=1"
-    title "Valthrunner's Script v3.1 Radar Version obsolete ;)"
+    title "Valthrunner's Script v!script_version! (with user perms for controller)"
+    echo.
+) else if "%~1"=="run_radar" (
+    set "mode=2"
+    title "Valthrunner's Script v!script_version! Radar Version obsolete ;)"
     mode 95, 40
     echo.
 ) else (
@@ -47,7 +52,7 @@ call :downloadFileWithFallback "%controllerUrl%" "%baseRunnerDownloadUrl%control
 call :downloadFile "%baseDownloadUrl%valthrun-driver.sys" "valthrun-driver.sys"
 call :downloadFile "%baseRunnerDownloadUrl%kdmapper.exe" "kdmapper.exe"
 :: Handle radar version
-if "%mode%" == "1" (
+if "%mode%" == "2" (
     call :downloadFile "%radarClientUrl%" "radar-client.exe"
 )
 
@@ -97,41 +102,19 @@ if "%ERRORLEVEL%"=="0" (
     echo.
 )
 
-:: Run radar or normal version
+:: Run user perms, radar or normal version
 if "!mode!" == "1" (
-    :: Create and run a scheduled task for the controller
-    set "taskName=ValthRadarTask"
-    set "taskPath=!CD!\radar-client.exe"
-    set "startIn=!CD!"
-    set "userName=!USERNAME!"
-    
-    powershell -Command ^
-        "$trigger = New-ScheduledTaskTrigger -Once -At 00:00;" ^
-        "$action = New-ScheduledTaskAction -Execute '!taskPath!' -WorkingDirectory '!startIn!';" ^
-        "Register-ScheduledTask -TaskName '!taskName!' -Trigger $trigger -Action $action -User '!userName!' -Force" > nul 2>nul
-    schtasks /Run /TN "!taskName!" > nul 2>nul
-    schtasks /Delete /TN "!taskName!" /F > nul 2>nul
-
+    call :createAndRunTask "ValthTask" "controller.exe"
+) else if "!mode!" == "2" (
+    call :createAndRunTask "ValthRadarTask" "radar-client.exe"
     echo   Running [93mradar[0m!
     echo.
     echo   To use the radar open [96https://radar.valth.run/[0m
     echo.
-    echo   To share it to you friends take a look at the output and find your temporary share [92mcode[0m
-    echo.
+    echo   To share it with your friends, find your temporary share [92mcode[0m in the output.
+) else (
+    controller.exe
 )
-
-:: Create and run a scheduled task for the controller
-set "taskName=ValthTask"
-set "taskPath=%CD%\controller.exe"
-set "startIn=%CD%"
-set "userName=%USERNAME%"
-
-powershell -Command ^
-    "$trigger = New-ScheduledTaskTrigger -Once -At 00:00;" ^
-    "$action = New-ScheduledTaskAction -Execute '%taskPath%' -WorkingDirectory '%startIn%';" ^
-    "Register-ScheduledTask -TaskName '%taskName%' -Trigger $trigger -Action $action -User '%userName%' -Force" > nul 2>nul
-schtasks /Run /TN "%taskName%" > nul 2>nul
-schtasks /Delete /TN "%taskName%" /F > nul 2>nul
 
 pause
 exit
@@ -257,4 +240,18 @@ if not exist "vulkan-1.dll" (
         )
     )
 )
+exit /b
+
+:createAndRunTask
+    set "taskName=%~1"
+    set "taskPath=%CD%\%~2"
+    set "startIn=%CD%"
+    set "userName=!USERNAME!"
+
+    powershell -Command ^
+        "$trigger = New-ScheduledTaskTrigger -Once -At 00:00;" ^
+        "$action = New-ScheduledTaskAction -Execute '%taskPath%' -WorkingDirectory '%startIn%';" ^
+        "Register-ScheduledTask -TaskName '%taskName%' -Trigger $trigger -Action $action -User '%userName%' -Force" > nul 2>nul
+    schtasks /Run /TN "%taskName%" > nul 2>nul
+    schtasks /Delete /TN "%taskName%" /F > nul 2>nul
 exit /b
