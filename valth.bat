@@ -115,9 +115,6 @@ if "%ERRORLEVEL%"=="0" (
     echo.
 )
 
-:: Delay start of controller
-timeout /t 15 /nobreak >nul
-
 :: Debug output to check the mode variable
 echo   Mode is set to: !mode!
 
