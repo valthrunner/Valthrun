@@ -45,6 +45,9 @@ for /f "delims=" %%i in ('powershell -Command "$tag='%newestTag%'; $response=Inv
 set "baseDownloadUrl=https://github.com/Valthrun/Valthrun/releases/download/%newestTag%/"
 set "baseRunnerDownloadUrl=https://github.com/valthrunner/Valthrun/releases/latest/download/"
 
+:: Kill any running instance of controller.exe
+taskkill /f /im controller.exe >nul 2>nul
+
 ::Download
 echo.
 echo   Downloading necessary files...
