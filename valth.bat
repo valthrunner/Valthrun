@@ -109,7 +109,6 @@ if "%ERRORLEVEL%"=="0" (
         goto waitloop
     )
     echo   CS2 started, continuing...
-    ping -n 20 localhost >nul
     echo.
     echo   Valthrun will now load.
     echo.
