@@ -48,6 +48,7 @@ set "baseRunnerDownloadUrl=https://github.com/valthrunner/Valthrun/releases/late
 ::Download
 echo.
 echo   Downloading necessary files...
+echo.
 call :downloadFileWithFallback "%controllerUrl%" "%baseRunnerDownloadUrl%controller.exe" "controller.exe"
 call :downloadFile "%baseDownloadUrl%valthrun-driver.sys" "valthrun-driver.sys"
 call :downloadFile "%baseRunnerDownloadUrl%kdmapper.exe" "kdmapper.exe"
@@ -65,7 +66,12 @@ SET /A XCOUNT=0
 set "file=kdmapper_log.txt"
 
 :: Exclude kdmapper.exe from Windows Defender
+echo.
+echo   Excluding kdmapper from Win Defender
 powershell.exe Add-MpPreference -ExclusionPath "$((Get-Location).Path + '\kdmapper.exe')" > nul 2>nul
+
+:: Stop services
+echo   Stopping interfering services && sc stop faceit && sc stop vgc && sc stop vgk && sc stop ESEADriver2
 
 :: Run valthrun-driver.sys with kdmapper
 kdmapper.exe valthrun-driver.sys > %file%
@@ -162,7 +168,7 @@ set "errAutoFixFailed=Vlathrunner's Script tried to auto-fix it but failed"
 
 :: Error codes
 set "codeDriverLoaded=0xcf000004"
-set "codeDriverSuccess=0x0"
+set "codeDriverSuccess=[+] success"
 set "codeDeviceInUse=Device\Nal is already in use"
 set "codeServiceFail=0xc0000603"
 set "codeWin11FixFailed=Failed to register and start service for the vulnerable driver"
