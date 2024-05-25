@@ -9,7 +9,7 @@ set "mode=0"
 
 :: Set mode based on arguments
 if "%~1"=="run" (
-    :: none
+    rem nothing
 ) else if "%~1"=="run_userperms" (
     set "mode=1"
     title "%default_title% (with user perms for controller)"
