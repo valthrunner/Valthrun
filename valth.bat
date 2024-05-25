@@ -114,7 +114,7 @@ if "%ERRORLEVEL%"=="0" (
 )
 
 :: Delay start of controller
-timeout /t 5 /nobreak >nul
+timeout /t 15 /nobreak >nul
 
 :: Run user perms, radar or normal version
 if "!mode!" == "1" (
