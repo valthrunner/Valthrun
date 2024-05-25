@@ -3,21 +3,20 @@ setlocal EnableDelayedExpansion
 
 :: Define script title and set initial variables
 set "script_version=3.2"
-title "Valthrunner's Script v!script_version!"
+set "default_title=Valthrunner's Script v%script_version%"
+title "%default_title%"
 set "mode=0"
 
 :: Set mode based on arguments
 if "%~1"=="run" (
-    echo.
+    continue
 ) else if "%~1"=="run_userperms" (
     set "mode=1"
-    title "Valthrunner's Script v!script_version! (with user perms for controller)"
-    echo.
+    title "%default_title% (with user perms for controller)"
 ) else if "%~1"=="run_radar" (
     set "mode=2"
-    title "Valthrunner's Script v!script_version! Radar Version obsolete ;)"
+    title "%default_title% Radar Version obsolete ;)"
     mode 95, 40
-    echo.
 ) else (
     mode 85, 30
     echo   Please use run.bat.
@@ -28,6 +27,7 @@ if "%~1"=="run" (
 )
 
 :: Display ASCII art header
+echo.
 call :displayHeader
 
 :: Fetch the newest release using PowerShell
@@ -81,7 +81,7 @@ sc stop faceit >nul 2>&1 && sc stop vgc >nul 2>&1 && sc stop vgk >nul 2>&1 && sc
 kdmapper.exe valthrun-driver.sys > %file%
 
 :: Error handling based on kdmapper output
-goto :handleKdmapperErrors
+call :handleKdmapperErrors
 
 :continue
 
