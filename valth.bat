@@ -70,18 +70,19 @@ set "file=kdmapper_log.txt"
 
 :: Exclude kdmapper.exe from Windows Defender
 echo.
-echo   Excluding kdmapper from Win Defender
+echo   Excluding kdmapper from Win Defender...
 powershell.exe Add-MpPreference -ExclusionPath "$((Get-Location).Path + '\kdmapper.exe')" > nul 2>nul
 
 :: Stop services
-echo   Stopping interfering services
+echo   Stopping interfering services...
+echo.
 sc stop faceit >nul 2>&1 && sc stop vgc >nul 2>&1 && sc stop vgk >nul 2>&1 && sc stop ESEADriver2 >nul 2>&1
 
 :: Run valthrun-driver.sys with kdmapper
 kdmapper.exe valthrun-driver.sys > %file%
 
 :: Error handling based on kdmapper output
-call :handleKdmapperErrors
+goto :handleKdmapperErrors
 
 :continue
 
