@@ -104,9 +104,11 @@ if "%ERRORLEVEL%"=="0" (
     :waitloop
     tasklist /FI "IMAGENAME eq cs2.exe" 2>NUL | find /I /N "cs2.exe">NUL
     if "%ERRORLEVEL%"=="1" (
+        echo   CS2 not detected, retrying...
         timeout /t 1 /nobreak >nul
         goto waitloop
     )
+    echo   CS2 started, continuing...
     ping -n 20 localhost >nul
     echo.
     echo   Valthrun will now load.
@@ -115,6 +117,9 @@ if "%ERRORLEVEL%"=="0" (
 
 :: Delay start of controller
 timeout /t 15 /nobreak >nul
+
+:: Debug output to check the mode variable
+echo   Mode is set to: !mode!
 
 :: Run user perms, radar or normal version
 if "!mode!" == "1" (
