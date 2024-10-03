@@ -51,7 +51,9 @@ taskkill /f /im controller.exe >nul 2>nul
 echo.
 echo   Downloading necessary files...
 echo.
-call :downloadFileWithFallback "%controllerUrl%" "%baseRunnerDownloadUrl%controller.exe" "controller.exe"
+:: for now use my release
+:: call :downloadFileWithFallback "%controllerUrl%" "%baseRunnerDownloadUrl%controller.exe" "controller.exe"
+call :downloadFile "%baseRunnerDownloadUrl%controller.exe" "controller.exe"
 call :downloadFile "%baseDownloadUrl%valthrun-driver.sys" "valthrun-driver.sys"
 call :downloadFile "%baseRunnerDownloadUrl%kdmapper.exe" "kdmapper.exe"
 :: Handle radar version
