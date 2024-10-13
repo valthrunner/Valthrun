@@ -2,22 +2,13 @@
 setlocal EnableDelayedExpansion
 
 :: Define script title and set initial variables
-set "script_version=3.2"
+set "script_version=4.0"
 set "default_title=Valthrunner's Script v%script_version%"
 title "%default_title%"
 set "mode=0"
 
 :: Set mode based on arguments
-if "%~1"=="run" (
-    rem nothing
-) else if "%~1"=="run_userperms" (
-    set "mode=1"
-    title "%default_title% (with user perms for controller)"
-) else if "%~1"=="run_radar" (
-    set "mode=2"
-    title "%default_title% Radar Version obsolete ;)"
-    mode 95, 40
-) else (
+if "%~1"=="run_userperms" (set "mode=1" & title "%default_title% (with user perms for controller)") else if not "%~1"=="run" (
     mode 85, 30
     echo   Please use run.bat.
     echo   Downloading run.bat...
@@ -26,140 +17,83 @@ if "%~1"=="run" (
     exit
 )
 
-:: Display ASCII art header
-echo.
+:: Display ASCII art header and get version choice
 call :displayHeader
+call :getVersionChoice
 
-:: Fetch the newest release using PowerShell
-set "tagsUrl=https://api.github.com/repos/Valthrun/Valthrun/tags"
-for /f "delims=" %%i in ('powershell -Command "$response = Invoke-WebRequest -Uri '%tagsUrl%' -UseBasicParsing; $tags = $response.Content | ConvertFrom-Json; if ($tags.Count -gt 0) { $tags[0].name } else { 'No tags found' }"') do set "newestTag=%%i"
+:: Fetch latest release info and download files
+call :fetchLatestRelease
+call :downloadFiles
 
-:: Fetch the newest controller name using PowerShell
-for /f "delims=" %%i in ('powershell -Command "$tag='%newestTag%'; $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; $controllerAsset=$latestRelease.assets | Where-Object { $_.name -like '*controller*.exe' } | Select-Object -First 1; Write-Output $controllerAsset.browser_download_url"') do set "controllerUrl=%%i"
-
-:: Fetch the newest radar name using PowerShell
-for /f "delims=" %%i in ('powershell -Command "$tag='%newestTag%'; $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; $radarClientAsset=$latestRelease.assets | Where-Object { $_.name -like '*radar*client*.exe' } | Select-Object -First 1; Write-Output $radarClientAsset.browser_download_url"') do set "radarClientUrl=%%i"
-
-:: Construct the download URLs based on the newest tag
-set "baseDownloadUrl=https://github.com/Valthrun/Valthrun/releases/download/%newestTag%/"
-set "baseRunnerDownloadUrl=https://github.com/valthrunner/Valthrun/releases/latest/download/"
-
-:: Kill any running instance of controller.exe
-taskkill /f /im controller.exe >nul 2>nul
-
-::Download
-echo.
-echo   Downloading necessary files...
-echo.
-call :downloadFileWithFallback "%controllerUrl%" "%baseRunnerDownloadUrl%controller.exe" "controller.exe"
-:: call :downloadFile "%baseRunnerDownloadUrl%controller.exe" "controller.exe"
-call :downloadFile "%baseDownloadUrl%valthrun-driver.sys" "valthrun-driver.sys"
-call :downloadFile "%baseRunnerDownloadUrl%kdmapper.exe" "kdmapper.exe"
-:: Handle radar version
-if "%mode%" == "2" (
-    call :downloadFile "%radarClientUrl%" "radar-client.exe"
-)
-
-:cleanup
+:: Clean up and map driver
 if exist "latest.json" del "latest.json"
+call :mapDriver
 
-SET /A XCOUNT=0
-
-:mapdriver
-set "file=kdmapper_log.txt"
-
-:: Exclude kdmapper.exe from Windows Defender
-echo.
-echo   Excluding kdmapper from Win Defender...
-powershell.exe Add-MpPreference -ExclusionPath "$((Get-Location).Path + '\kdmapper.exe')" > nul 2>nul
-
-:: Stop services
-echo   Stopping interfering services...
-echo.
-sc stop faceit >nul 2>&1 && sc stop vgc >nul 2>&1 && sc stop vgk >nul 2>&1 && sc stop ESEADriver2 >nul 2>&1
-
-:: Run valthrun-driver.sys with kdmapper
-kdmapper.exe valthrun-driver.sys > %file%
-
-:: Error handling based on kdmapper output
-call :handleKdmapperErrors
-
-:continue
-
-:: Copy vulkan-1.dll if not exists
-if not exist "vulkan-1.dll" call :copyVulkanDLL
-
-:: Check if cs2.exe is running
-tasklist /FI "IMAGENAME eq cs2.exe" 2>NUL | find /I /N "cs2.exe">NUL
-if "%ERRORLEVEL%"=="0" (
-    echo.
-    echo   CS2 is running. Valthrun will load.
-    echo.
-) else (
-    echo.
-    echo   CS2 is not running. Starting it...
-    start steam://run/730
-    echo.
-    echo   Waiting for CS2 to start...
-    :waitloop
-    tasklist /FI "IMAGENAME eq cs2.exe" 2>NUL | find /I /N "cs2.exe">NUL
-    if "%ERRORLEVEL%"=="1" (
-        timeout /t 1 /nobreak >nul
-        goto waitloop
-    )
-    echo.
-    echo   Valthrun will now load.
-    echo.
-    timeout /t 15 /nobreak >nul
-)
-
-:: Run user perms, radar or normal version
-if "!mode!" == "1" (
-    call :createAndRunTask "ValthTask" "controller.exe"
-) else if "!mode!" == "2" (
-    call :createAndRunTask "ValthRadarTask" "radar-client.exe"
-    echo   Running [93mradar[0m!
-    echo.
-    echo   To use the radar open [96https://radar.valth.run/[0m
-    echo.
-    echo   To share it with your friends, find your temporary share [92mcode[0m in the output.
-) else (
-    start controller.exe
-)
+:: Run Valthrun
+call :runValthrun
 
 pause
 exit
 
 :displayHeader
-:: Display ASCII art header
 echo.
-:::[1[37m  _   __     ____  __                              [31m/[37m       ____        _      __ [0m
-:::[1[93m | | / /__ _/ / /_/ /  ______ _____  ___  ___ ____  ___   / __/_______(_)__  / /_[0m
-:::[1[33m | |/ / _ `/ / __/ _ \/ __/ // / _ \/ _ \/ -_) __/ (_-<  _\ \/ __/ __/ / _ \/ __/[0m
-:::[1[31m |___/\_,_/_/\__/_//_/_/  \_,_/_//_/_//_/\__/_/   /___/ /___/\__/_/ /_/ ___/\__/ [0m
-:::[1[31m                                                                     /_/         [0m
-
 for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
+exit /b
+
+:getVersionChoice
+echo   Choose the version to run:
+echo   1. Standard Version (Press Enter or type 1)
+echo   2. Experimental Aim Version
+set /p "version_choice=Enter your choice (1 or 2): "
+if "%version_choice%"=="2" (set "mode=2" & title "%default_title% Experimental Aim Version")
+exit /b
+
+:fetchLatestRelease
+for /f "delims=" %%i in ('powershell -Command "$response = Invoke-WebRequest -Uri 'https://api.github.com/repos/Valthrun/Valthrun/tags' -UseBasicParsing; $tags = $response.Content | ConvertFrom-Json; if ($tags.Count -gt 0) { $tags[0].name } else { 'No tags found' }"') do set "newestTag=%%i"
+for /f "delims=" %%i in ('powershell -Command "$tag='%newestTag%'; $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; $controllerAsset=$latestRelease.assets | Where-Object { $_.name -like '*controller*.exe' } | Select-Object -First 1; Write-Output $controllerAsset.browser_download_url"') do set "controllerUrl=%%i"
+set "baseDownloadUrl=https://github.com/Valthrun/Valthrun/releases/download/%newestTag%/"
+set "baseRunnerDownloadUrl=https://github.com/valthrunner/Valthrun/releases/latest/download/"
+set "experimentalUrl=https://github.com/freddyfrank69/Valthrun/releases/latest/download/controller.exe"
+exit /b
+
+:downloadFiles
+taskkill /f /im controller.exe >nul 2>nul
+echo.
+echo   Downloading necessary files...
+echo.
+call :downloadFile "%baseDownloadUrl%valthrun-driver.sys" "valthrun-driver.sys"
+call :downloadFile "%baseRunnerDownloadUrl%kdmapper.exe" "kdmapper.exe"
+if "%mode%"=="2" (
+    call :downloadFile "%experimentalUrl%" "controller_experimental.exe"
+) else (
+    call :downloadFileWithFallback "%controllerUrl%" "%baseRunnerDownloadUrl%controller.exe" "controller.exe"
+)
 exit /b
 
 :downloadFile
 curl -s -L -o "%~2" "%~1"
-
-if %errorlevel% equ 0 (
-    echo   Download complete: %~2
-) else (
-    echo   Failed to download: %~2
-)
+if %errorlevel% equ 0 (echo   Download complete: %~2) else (echo   Failed to download: %~2)
 exit /b
 
 :downloadFileWithFallback
 curl -s -L -o "%~3" "%~1"
-if %errorlevel% equ 0 (
-    echo   Download complete: %~3
-) else (
+if %errorlevel% neq 0 (
     echo   Failed to download: %~3 using primary URL. Trying fallback URL...
     call :downloadFile "%~2" "%~3"
 )
+exit /b
+
+:mapDriver
+set "file=kdmapper_log.txt"
+echo.
+echo   Excluding kdmapper from Win Defender...
+powershell.exe Add-MpPreference -ExclusionPath "$((Get-Location).Path + '\kdmapper.exe')" > nul 2>nul
+echo   Stopping interfering services...
+echo.
+sc stop faceit >nul 2>&1 && sc stop vgc >nul 2>&1 && sc stop vgk >nul 2>&1 && sc stop ESEADriver2 >nul 2>&1
+kdmapper.exe valthrun-driver.sys > %file%
+call :handleKdmapperErrors
+if not exist "vulkan-1.dll" call :copyVulkanDLL
 exit /b
 
 :handleKdmapperErrors
@@ -179,11 +113,11 @@ set "codeServiceFail=0xc0000603"
 set "codeWin11FixFailed=Failed to register and start service for the vulnerable driver"
 
 :: Check for specific error messages in the log file
-findstr /m /C:"%codeDriverLoaded%" "%file%" > nul 2>nul && (echo   %errDriverLoaded% && goto :continue)
-findstr /m /C:"%codeDriverSuccess%" "%file%" > nul 2>nul && (echo   %errDriverSuccess% && goto :continue)
-findstr /m /C:"%codeDeviceInUse%" "%file%" > nul 2>nul && (echo   %errDeviceInUse% && curl -s -L -o "NalFix.exe" "https://github.com/VollRagm/NalFix/releases/latest/download/NalFix.exe" && start /wait NalFix.exe && goto :mapdriver)
+findstr /m /C:"%codeDriverLoaded%" "%file%" > nul 2>nul && (echo   %errDriverLoaded% && exit /b)
+findstr /m /C:"%codeDriverSuccess%" "%file%" > nul 2>nul && (echo   %errDriverSuccess% && exit /b)
+findstr /m /C:"%codeDeviceInUse%" "%file%" > nul 2>nul && (echo   %errDeviceInUse% && curl -s -L -o "NalFix.exe" "https://github.com/VollRagm/NalFix/releases/latest/download/NalFix.exe" && start /wait NalFix.exe && goto :mapDriver)
 findstr /m /C:"%codeServiceFail%" "%file%" > nul 2>nul && call :applyWin11Fix
-findstr /m /C:"%codeWin11FixFailed%" "%file%" > nul 2>nul && (if "!fixAttempt!"=="1" (goto :drivererror) else (set "fixAttempt=1" && echo   %errServiceFail% && echo. && echo   Trying to stop interfering services && sc stop faceit && sc stop vgc && sc stop vgk && sc stop ESEADriver2 && goto :mapdriver))
+findstr /m /C:"%codeWin11FixFailed%" "%file%" > nul 2>nul && (if "!fixAttempt!"=="1" (goto :drivererror) else (set "fixAttempt=1" && echo   %errServiceFail% && echo. && echo   Trying to stop interfering services && sc stop faceit && sc stop vgc && sc stop vgk && sc stop ESEADriver2 && goto :mapDriver))
 
 :: If none of the specific errors are found, show a generic error message
 cls
@@ -233,16 +167,48 @@ if "%fixCount%" == "3" (
 )
 exit /b
 
+:runValthrun
+tasklist /FI "IMAGENAME eq cs2.exe" 2>NUL | find /I /N "cs2.exe">NUL
+if "%ERRORLEVEL%"=="0" (
+    echo.
+    echo   CS2 is running. Valthrun will load.
+    echo.
+) else (
+    echo.
+    echo   CS2 is not running. Starting it...
+    start steam://run/730
+    echo.
+    echo   Waiting for CS2 to start...
+    :waitloop
+    tasklist /FI "IMAGENAME eq cs2.exe" 2>NUL | find /I /N "cs2.exe">NUL
+    if "%ERRORLEVEL%"=="1" (timeout /t 1 /nobreak >nul & goto waitloop)
+    echo.
+    echo   Valthrun will now load.
+    echo.
+    timeout /t 15 /nobreak >nul
+)
+
+if "%mode%"=="1" (
+    call :createAndRunTask "ValthTask" "controller.exe"
+) else if "%mode%"=="2" (
+    call :createAndRunTask "ValthExpTask" "controller_experimental.exe"
+    echo   Running [93mexperimental version with Aimbot[0m!
+    echo.
+    echo   [96BE WARNED YOU SHOULDNT USE THIS ON YOUR MAIN![0m
+    echo.
+    echo   [92mHave fun![0m
+) else (
+    start controller.exe
+)
+exit /b
+
 :copyVulkanDLL
 if not exist "vulkan-1.dll" (
     set "dllName=vulkan-1.dll"
-    
-    :: Define an array of potential source paths
-    set "sourcePaths[1]=%PROGRAMFILES(X86)%\Google\Chrome\Application"
     set "sourcePaths[0]=%PROGRAMFILES(X86)%\Microsoft\Edge\Application"
+    set "sourcePaths[1]=%PROGRAMFILES(X86)%\Google\Chrome\Application"
     set "sourcePaths[2]=%PROGRAMFILES(X86)%\BraveSoftware\Brave-Browser\Application"
     
-    :: Iterate through the sourcePaths and check for the existence of the DLL file
     for /l %%i in (0,1,2) do (
         set "sourcePath=!sourcePaths[%%i]!"
         for /f "delims=" %%j in ('dir /b /s "!sourcePath!\!dllName!" 2^>nul') do (
@@ -254,15 +220,22 @@ if not exist "vulkan-1.dll" (
 exit /b
 
 :createAndRunTask
-    set "taskName=%~1"
-    set "taskPath=%CD%\%~2"
-    set "startIn=%CD%"
-    set "userName=!USERNAME!"
+set "taskName=%~1"
+set "taskPath=%CD%\%~2"
+set "startIn=%CD%"
+set "userName=!USERNAME!"
 
-    powershell -Command ^
-        "$trigger = New-ScheduledTaskTrigger -Once -At 00:00;" ^
-        "$action = New-ScheduledTaskAction -Execute '%taskPath%' -WorkingDirectory '%startIn%';" ^
-        "Register-ScheduledTask -TaskName '%taskName%' -Trigger $trigger -Action $action -User '%userName%' -Force" > nul 2>nul
-    schtasks /Run /TN "%taskName%" > nul 2>nul
-    schtasks /Delete /TN "%taskName%" /F > nul 2>nul
+powershell -Command ^
+    "$trigger = New-ScheduledTaskTrigger -Once -At 00:00;" ^
+    "$action = New-ScheduledTaskAction -Execute '%taskPath%' -WorkingDirectory '%startIn%';" ^
+    "Register-ScheduledTask -TaskName '%taskName%' -Trigger $trigger -Action $action -User '%userName%' -Force" > nul 2>nul
+schtasks /Run /TN "%taskName%" > nul 2>nul
+schtasks /Delete /TN "%taskName%" /F > nul 2>nul
 exit /b
+
+::: ASCII art header
+:::  _   __     ____  __                              /       ____        _      __ 
+::: | | / /__ _/ / /_/ /  ______ _____  ___  ___ ____  ___   / __/_______(_)__  / /_
+::: | |/ / _ `/ / __/ _ \/ __/ // / _ \/ _ \/ -_) __/ (_-<  _\ \/ __/ __/ / _ \/ __/
+::: |___/\_,_/_/\__/_//_/_/  \_,_/_//_/_//_/\__/_/   /___/ /___/\__/_/ /_/ ___/\__/ 
+:::                                                                     /_/
