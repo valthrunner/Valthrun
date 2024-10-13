@@ -41,16 +41,17 @@ for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
 exit /b
 
 :getVersionChoice
+echo.
 echo   Choose the version to run:
 echo   1. Standard Version (Press Enter or type 1)
 echo   2. Experimental Aim Version
-set /p version_choice="  Enter your choice (1 or 2): "
+set /p "version_choice=  Enter your choice (1 or 2): "
 if "%version_choice%"=="2" (set "mode=2" & title "%default_title% Experimental Aim Version")
 exit /b
 
 :fetchLatestRelease
-for /f "delims=" %%i in ('powershell -NoLogo -Command "$response = Invoke-WebRequest -Uri 'https://api.github.com/repos/Valthrun/Valthrun/tags' -UseBasicParsing; $tags = $response.Content | ConvertFrom-Json; if ($tags.Count -gt 0) { $tags[0].name } else { 'No tags found' }"') do set "newestTag=%%i"
-for /f "delims=" %%i in ('powershell -NoLogo -Command "$tag='%newestTag%'; $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; $controllerAsset=$latestRelease.assets | Where-Object { $_.name -like '*controller*.exe' } | Select-Object -First 1; Write-Output $controllerAsset.browser_download_url"') do set "controllerUrl=%%i"
+for /f "delims=" %%i in ('powershell -NoLogo -NoProfile -WindowStyle Hidden -Command "$response = Invoke-WebRequest -Uri 'https://api.github.com/repos/Valthrun/Valthrun/tags' -UseBasicParsing; $tags = $response.Content | ConvertFrom-Json; if ($tags.Count -gt 0) { $tags[0].name } else { 'No tags found' }"') do set "newestTag=%%i"
+for /f "delims=" %%i in ('powershell -NoLogo -NoProfile -WindowStyle Hidden -Command "$tag='%newestTag%'; $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; $controllerAsset=$latestRelease.assets | Where-Object { $_.name -like '*controller*.exe' } | Select-Object -First 1; Write-Output $controllerAsset.browser_download_url"') do set "controllerUrl=%%i"
 set "baseDownloadUrl=https://github.com/Valthrun/Valthrun/releases/download/%newestTag%/"
 set "baseRunnerDownloadUrl=https://github.com/valthrunner/Valthrun/releases/latest/download/"
 set "experimentalUrl=https://github.com/freddyfrank69/Valthrun/releases/latest/download/controller.exe"
@@ -194,9 +195,10 @@ if "%mode%"=="1" (
     call :createAndRunTask "ValthExpTask" "controller_experimental.exe"
     echo   Running [93mexperimental version with Aimbot![0m
     echo.
-    echo   [96mBE WARNED YOU SHOULDNT USE THIS ON YOUR MAIN![0m
+    echo   [96mBE WARNED YOU SHOULDN'T USE THIS ON YOUR MAIN![0m
     echo.
     echo   [92mHave fun![0m
+    echo.
 ) else (
     start controller.exe
 )
@@ -225,7 +227,7 @@ set "taskPath=%CD%\%~2"
 set "startIn=%CD%"
 set "userName=!USERNAME!"
 
-powershell -NoLogo -Command ^
+powershell -NoLogo -NoProfile -WindowStyle Hidden -Command ^
     "$trigger = New-ScheduledTaskTrigger -Once -At 00:00;" ^
     "$action = New-ScheduledTaskAction -Execute '%taskPath%' -WorkingDirectory '%startIn%';" ^
     "Register-ScheduledTask -TaskName '%taskName%' -Trigger $trigger -Action $action -User '%userName%' -Force" > nul 2>nul
