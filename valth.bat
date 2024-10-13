@@ -192,9 +192,9 @@ if "%mode%"=="1" (
     call :createAndRunTask "ValthTask" "controller.exe"
 ) else if "%mode%"=="2" (
     call :createAndRunTask "ValthExpTask" "controller_experimental.exe"
-    echo   Running [93mrexperimental version with Aimbot[0m!
+    echo   Running [93mexperimental version with Aimbot![0m
     echo.
-    echo   [96BE WARNED YOU SHOULDNT USE THIS ON YOUR MAIN![0m
+    echo   [96mBE WARNED YOU SHOULDNT USE THIS ON YOUR MAIN![0m
     echo.
     echo   [92mHave fun![0m
 ) else (
