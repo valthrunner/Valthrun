@@ -54,7 +54,7 @@ for /f "delims=" %%i in ('powershell -NoLogo -NoProfile -Command "$response = In
 for /f "delims=" %%i in ('powershell -NoLogo -NoProfile -Command "$tag='%newestTag%'; $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; $controllerAsset=$latestRelease.assets | Where-Object { $_.name -like '*controller*.exe' } | Select-Object -First 1; Write-Output $controllerAsset.browser_download_url"') do set "controllerUrl=%%i"
 set "baseDownloadUrl=https://github.com/Valthrun/Valthrun/releases/download/%newestTag%/"
 set "baseRunnerDownloadUrl=https://github.com/valthrunner/Valthrun/releases/latest/download/"
-set "experimentalUrl=https://github.com/freddyfrank69/Valthrun/releases/latest/download/controller.exe"
+set "experimentalUrl=https://github.com/wqq-z/Valthrun/releases/latest/download/controller.exe"
 exit /b
 
 :downloadFiles
