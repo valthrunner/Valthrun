@@ -50,8 +50,8 @@ if "%version_choice%"=="2" (set "mode=2" & title "%default_title% Experimental A
 exit /b
 
 :fetchLatestRelease
-for /f "delims=" %%i in ('powershell -NoLogo -NoProfile -WindowStyle Hidden -Command "$response = Invoke-WebRequest -Uri 'https://api.github.com/repos/Valthrun/Valthrun/tags' -UseBasicParsing; $tags = $response.Content | ConvertFrom-Json; if ($tags.Count -gt 0) { $tags[0].name } else { 'No tags found' }"') do set "newestTag=%%i"
-for /f "delims=" %%i in ('powershell -NoLogo -NoProfile -WindowStyle Hidden -Command "$tag='%newestTag%'; $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; $controllerAsset=$latestRelease.assets | Where-Object { $_.name -like '*controller*.exe' } | Select-Object -First 1; Write-Output $controllerAsset.browser_download_url"') do set "controllerUrl=%%i"
+for /f "delims=" %%i in ('powershell -NoLogo -NoProfile -Command "$response = Invoke-WebRequest -Uri 'https://api.github.com/repos/Valthrun/Valthrun/tags' -UseBasicParsing; $tags = $response.Content | ConvertFrom-Json; if ($tags.Count -gt 0) { $tags[0].name } else { 'No tags found' }"') do set "newestTag=%%i"
+for /f "delims=" %%i in ('powershell -NoLogo -NoProfile -Command "$tag='%newestTag%'; $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; $controllerAsset=$latestRelease.assets | Where-Object { $_.name -like '*controller*.exe' } | Select-Object -First 1; Write-Output $controllerAsset.browser_download_url"') do set "controllerUrl=%%i"
 set "baseDownloadUrl=https://github.com/Valthrun/Valthrun/releases/download/%newestTag%/"
 set "baseRunnerDownloadUrl=https://github.com/valthrunner/Valthrun/releases/latest/download/"
 set "experimentalUrl=https://github.com/freddyfrank69/Valthrun/releases/latest/download/controller.exe"
@@ -69,11 +69,13 @@ if "%mode%"=="2" (
 ) else (
     call :downloadFileWithFallback "%controllerUrl%" "%baseRunnerDownloadUrl%controller.exe" "controller.exe"
 )
+title "%default_title%"
 exit /b
 
 :downloadFile
 curl -s -L -o "%~2" "%~1"
 if %errorlevel% equ 0 (echo   Download complete: %~2) else (echo   Failed to download: %~2)
+title "%default_title%"
 exit /b
 
 :downloadFileWithFallback
@@ -82,6 +84,7 @@ if %errorlevel% neq 0 (
     echo   Failed to download: %~3 using primary URL. Trying fallback URL...
     call :downloadFile "%~2" "%~3"
 )
+title "%default_title%"
 exit /b
 
 :mapDriver
@@ -227,10 +230,11 @@ set "taskPath=%CD%\%~2"
 set "startIn=%CD%"
 set "userName=!USERNAME!"
 
-powershell -NoLogo -NoProfile -WindowStyle Hidden -Command ^
+powershell -NoLogo -NoProfile -Command ^
     "$trigger = New-ScheduledTaskTrigger -Once -At 00:00;" ^
     "$action = New-ScheduledTaskAction -Execute '%taskPath%' -WorkingDirectory '%startIn%';" ^
     "Register-ScheduledTask -TaskName '%taskName%' -Trigger $trigger -Action $action -User '%userName%' -Force" > nul 2>nul
+title "%default_title%"
 schtasks /Run /TN "%taskName%" > nul 2>nul
 schtasks /Delete /TN "%taskName%" /F > nul 2>nul
 exit /b
