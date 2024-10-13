@@ -44,7 +44,7 @@ exit /b
 echo   Choose the version to run:
 echo   1. Standard Version (Press Enter or type 1)
 echo   2. Experimental Aim Version
-set /p "version_choice=  Enter your choice (1 or 2): "
+set /p version_choice="  Enter your choice (1 or 2): "
 if "%version_choice%"=="2" (set "mode=2" & title "%default_title% Experimental Aim Version")
 exit /b
 
@@ -238,4 +238,3 @@ exit /b
 :::[1[93m | | / /__ _/ / /_/ /  ______ _____  ___  ___ ____  ___   / __/_______(_)__  / /_[0m
 :::[1[33m | |/ / _ `/ / __/ _ \/ __/ // / _ \/ _ \/ -_) __/ (_-<  _\ \/ __/ __/ / _ \/ __/[0m
 :::[1[31m |___/\_,_/_/\__/_//_/_/  \_,_/_//_/_//_/\__/_/   /___/ /___/\__/_/ /_/ ___/\__/ [0m
-:::[1[31m    
