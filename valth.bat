@@ -73,20 +73,13 @@ if "%debug_mode%"=="1" echo [DEBUG] Fetching latest release information
 for /f "delims=" %%i in ('powershell -NoLogo -NoProfile -Command "$response = Invoke-WebRequest -Uri 'https://api.github.com/repos/Valthrun/Valthrun/tags' -UseBasicParsing; $tags = $response.Content | ConvertFrom-Json; if ($tags.Count -gt 0) { $tags[0].name } else { 'No tags found' }"') do set "newestTag=%%i"
 if "%debug_mode%"=="1" echo [DEBUG] Latest tag: %newestTag%
 
-:: Get the driver asset URL and controller URL
-for /f "delims=" %%i in ('powershell -NoLogo -NoProfile -Command ^
-    "$tag='%newestTag%'; ^
-    $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; ^
-    $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; ^
-    $driverAsset=$latestRelease.assets | Where-Object { $_.name -like 'valthrun-driver*.sys' } | Select-Object -First 1; ^
-    Write-Output $driverAsset.browser_download_url"') do set "driverUrl=%%i"
-
-for /f "delims=" %%i in ('powershell -NoLogo -NoProfile -Command ^
-    "$tag='%newestTag%'; ^
-    $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; ^
-    $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; ^
-    $controllerAsset=$latestRelease.assets | Where-Object { $_.name -like '*controller*.exe' } | Select-Object -First 1; ^
-    Write-Output $controllerAsset.browser_download_url"') do set "controllerUrl=%%i"
+for /f "delims=" %%i in ('powershell -NoLogo -NoProfile -Command "$tag='%newestTag%'; $response=Invoke-RestMethod -Uri 'https://api.github.com/repos/Valthrun/Valthrun/releases'; $latestRelease=$response | Where-Object { $_.tag_name -eq $tag }; $driverAsset=$latestRelease.assets | Where-Object { $_.name -like 'valthrun-driver*.sys' } | Select-Object -First 1; $controllerAsset=$latestRelease.assets | Where-Object { $_.name -like '*controller*.exe' } | Select-Object -First 1; Write-Output @($driverAsset.browser_download_url, $controllerAsset.browser_download_url)"') do (
+    if not defined driverUrl (
+        set "driverUrl=%%i"
+    ) else (
+        set "controllerUrl=%%i"
+    )
+)
 
 if "%debug_mode%"=="1" (
     echo [DEBUG] Driver URL: %driverUrl%
