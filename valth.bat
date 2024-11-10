@@ -422,12 +422,18 @@ set "errDeviceInUse=Device\Nal is already in use Error\n\nDownloading and runnin
 set "errServiceFail=Failed to register and start service for the vulnerable driver"
 set "errWin11Fix=Applying Windows 11 fix (restart required afterwards)"
 set "errAutoFixFailed=Vlathrunner's Script tried to auto-fix it but failed"
+set "errFunctionCallFailed=Function call to set up the Valthrun Kernel Driver failed. Check DebugView for more details."
+set "errInitializationFailed=The Valthrun Kernel Driver failed to initialize. Check DebugView for more details."
 
 :: Error codes
-set "codeDriverLoaded=0xcf000004"
-set "codeDriverSuccess=[+] success"
-set "codeDeviceInUse=Device\Nal is already in use"
+set "codeDriverSuccess=0x00000000"
 set "codeServiceFail=0xc0000603"
+set "codeFunctionCallFailed=0xcf000002"
+set "codeFailedToInitialize=0xcf000003"
+set "codeDriverLoaded=0xcf000004"
+
+set "codeDeviceInUse=Device\Nal is already in use"
+
 set "codeWin11FixFailed=Failed to register and start service for the vulnerable driver"
 
 :: Check for specific error messages in the log file
@@ -465,6 +471,18 @@ findstr /m /C:"%codeWin11FixFailed%" "%file%" > nul 2>nul && (
         sc stop ESEADriver2 
         goto :mapDriver
     )
+)
+
+:: Check for specific error messages in the log file
+findstr /m /C:"%codeFunctionCallFailed%" "%file%" > nul 2>nul && (
+    call :logMessage "Function call setup failed"
+    echo   %errFunctionCallFailed%
+    exit /b
+)
+findstr /m /C:"%codeFailedToInitialize%" "%file%" > nul 2>nul && (
+    call :logMessage "Initialization failed"
+    echo   %errInitializationFailed%
+    exit /b
 )
 
 :: If none of the specific errors are found, show a generic error message
