@@ -56,50 +56,175 @@ for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
 exit /b
 
 :downloadAndExtractFiles
-if "%debug_mode%"=="1" echo [DEBUG] Attempting download from valth.run
-:: Download and extract controller package
-curl -s -L -H "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" -o "valthrun_cs2.zip" "https://valth.run/download/cs2"
-if %errorlevel% neq 0 (
-    echo Download failed
-    exit /b
+echo.
+echo   Starting download process...
+if "%debug_mode%"=="1" (
+    echo [DEBUG] Starting downloadAndExtractFiles function
+    echo [DEBUG] Current directory: %CD%
 )
 
-:: Download and extract driver package
-curl -s -L -H "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" -o "valthrun_driver_kernel.zip" "https://valth.run/download/driver-kernel"
+:: Create a temporary directory for extraction
+set "temp_dir=%CD%\temp_extract"
+if "%debug_mode%"=="1" echo [DEBUG] Creating temporary directory: %temp_dir%
+if not exist "%temp_dir%" mkdir "%temp_dir%"
+
+:: Download controller package
+echo   Downloading controller package...
+if "%debug_mode%"=="1" echo [DEBUG] Downloading controller package from valth.run
+curl -s -L -H "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" -o "%temp_dir%\valthrun_cs2.zip" "https://valth.run/download/cs2"
 if %errorlevel% neq 0 (
-    echo Download failed
-    exit /b
+    if "%debug_mode%"=="1" echo [DEBUG] Controller package download failed with error: %errorlevel%
+    echo   Download failed: Controller package
+    echo   Please check your internet connection and try again.
+    rmdir /s /q "%temp_dir%" 2>nul
+    exit /b 1
 )
 
-:: Extract files
-powershell -command "Expand-Archive -Force 'valthrun_cs2.zip' ." >nul 2>&1
+:: Download driver package
+echo   Downloading driver package...
+if "%debug_mode%"=="1" echo [DEBUG] Downloading driver package from valth.run
+curl -s -L -H "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" -o "%temp_dir%\valthrun_driver_kernel.zip" "https://valth.run/download/driver-kernel"
 if %errorlevel% neq 0 (
-    if "%debug_mode%"=="1" echo [DEBUG] Driver extraction failed
-    exit /b
+    if "%debug_mode%"=="1" echo [DEBUG] Driver package download failed with error: %errorlevel%
+    echo   Download failed: Driver package
+    echo   Please check your internet connection and try again.
+    rmdir /s /q "%temp_dir%" 2>nul
+    exit /b 1
 )
 
-powershell -command "Expand-Archive -Force 'valthrun_driver_kernel.zip' ." >nul 2>&1
+:: Verify downloads
+if "%debug_mode%"=="1" (
+    echo [DEBUG] Verifying downloaded files
+    dir "%temp_dir%"
+)
+echo   Downloads completed successfully.
+
+:: Extract controller package
+echo   Extracting controller package...
+if "%debug_mode%"=="1" echo [DEBUG] Extracting controller package
+powershell -command "& { $ErrorActionPreference = 'Stop'; try { Expand-Archive -Force '%temp_dir%\valthrun_cs2.zip' '%temp_dir%' } catch { Write-Error $_.Exception.Message; exit 1 } }" >"%temp_dir%\extract_cs2.log" 2>&1
 if %errorlevel% neq 0 (
-    if "%debug_mode%"=="1" echo [DEBUG] Driver extraction failed
-    exit /b
+    if "%debug_mode%"=="1" (
+        echo [DEBUG] Controller extraction failed
+        echo [DEBUG] Extract log contents:
+        type "%temp_dir%\extract_cs2.log"
+    )
+    echo   Extraction failed: Controller package
+    echo   Try running the script as administrator.
+    rmdir /s /q "%temp_dir%" 2>nul
+    exit /b 1
 )
 
+:: Extract driver package
+echo   Extracting driver package...
+if "%debug_mode%"=="1" echo [DEBUG] Extracting driver package
+powershell -command "& { $ErrorActionPreference = 'Stop'; try { Expand-Archive -Force '%temp_dir%\valthrun_driver_kernel.zip' '%temp_dir%' } catch { Write-Error $_.Exception.Message; exit 1 } }" >"%temp_dir%\extract_driver.log" 2>&1
+if %errorlevel% neq 0 (
+    if "%debug_mode%"=="1" (
+        echo [DEBUG] Driver extraction failed
+        echo [DEBUG] Extract log contents:
+        type "%temp_dir%\extract_driver.log"
+    )
+    echo   Extraction failed: Driver package
+    echo   Try running the script as administrator.
+    rmdir /s /q "%temp_dir%" 2>nul
+    exit /b 1
+)
 
-:: Rename and organize files
-for %%F in (cs2_overlay_*.exe) do ren "%%F" "controller.exe"
-for %%F in (*radar*.exe) do del "%%F"
-for %%F in (kernel_driver_*.sys) do ren "%%F" "valthrun-driver.sys"
-for %%F in (driver_interface_kernel_*.dll) do set "interface_dll=%%F"
+:: Move and rename files
+echo   Processing files...
+if "%debug_mode%"=="1" echo [DEBUG] Processing extracted files
+pushd "%temp_dir%"
 
-:: Clean up zip files
-del valthrun_cs2.zip
-del valthrun_driver_kernel.zip
+:: Rename controller
+set "controller_found=0"
+for %%F in (cs2_overlay_*.exe) do (
+    set "controller_found=1"
+    if "%debug_mode%"=="1" echo [DEBUG] Found controller: %%F
+    move "%%F" "..\controller.exe" >nul 2>&1
+    if !errorlevel! neq 0 (
+        if "%debug_mode%"=="1" echo [DEBUG] Failed to move controller
+        echo   Error: Could not move controller file
+        popd
+        rmdir /s /q "%temp_dir%" 2>nul
+        exit /b 1
+    )
+)
+if "!controller_found!"=="0" (
+    echo   Error: Controller file not found in package
+    if "%debug_mode%"=="1" echo [DEBUG] No controller file found
+    popd
+    rmdir /s /q "%temp_dir%" 2>nul
+    exit /b 1
+)
 
+:: Remove radar files
+for %%F in (*radar*.exe) do (
+    if "%debug_mode%"=="1" echo [DEBUG] Removing radar file: %%F
+    del "%%F" >nul 2>&1
+)
+
+:: Rename driver
+set "driver_found=0"
+for %%F in (kernel_driver_*.sys) do (
+    set "driver_found=1"
+    if "%debug_mode%"=="1" echo [DEBUG] Found driver: %%F
+    move "%%F" "..\valthrun-driver.sys" >nul 2>&1
+    if !errorlevel! neq 0 (
+        if "%debug_mode%"=="1" echo [DEBUG] Failed to move driver
+        echo   Error: Could not move driver file
+        popd
+        rmdir /s /q "%temp_dir%" 2>nul
+        exit /b 1
+    )
+)
+if "!driver_found!"=="0" (
+    echo   Error: Driver file not found in package
+    if "%debug_mode%"=="1" echo [DEBUG] No driver file found
+    popd
+    rmdir /s /q "%temp_dir%" 2>nul
+    exit /b 1
+)
+
+:: Process interface DLL
+set "dll_found=0"
+for %%F in (driver_interface_kernel_*.dll) do (
+    set "dll_found=1"
+    if "%debug_mode%"=="1" echo [DEBUG] Found interface DLL: %%F
+    set "interface_dll=%%F"
+    move "%%F" "..\%%F" >nul 2>&1
+    if !errorlevel! neq 0 (
+        if "%debug_mode%"=="1" echo [DEBUG] Failed to move interface DLL
+        echo   Error: Could not move interface DLL
+        popd
+        rmdir /s /q "%temp_dir%" 2>nul
+        exit /b 1
+    )
+)
+if "!dll_found!"=="0" (
+    echo   Warning: Interface DLL not found in package
+    if "%debug_mode%"=="1" echo [DEBUG] No interface DLL found
+)
+
+popd
+
+:: Download kdmapper
+echo   Downloading additional components...
+if "%debug_mode%"=="1" echo [DEBUG] Downloading kdmapper
 call :downloadFile "https://github.com/valthrunner/Valthrun/releases/latest/download/kdmapper.exe" "kdmapper.exe"
 
-echo   Successfully downloaded and extracted files from valth.run
+:: Clean up
+if "%debug_mode%"=="1" echo [DEBUG] Cleaning up temporary files
+rmdir /s /q "%temp_dir%" 2>nul
 
-exit /b
+if "%debug_mode%"=="1" (
+    echo [DEBUG] Final file verification:
+    dir controller.exe valthrun-driver.sys kdmapper.exe
+)
+
+echo.
+echo   [92mAll files downloaded and extracted successfully![0m
+exit /b 0
 
 :getVersionChoice
 if "%debug_mode%"=="1" echo [DEBUG] Getting version choice
