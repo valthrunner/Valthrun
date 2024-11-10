@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 
 :: Define script title and set initial variables
-set "script_version=4.0"
+set "script_version=4.1"
 set "default_title=Valthrunner's Script v%script_version%"
 set "debug_mode=0"
 title "%default_title%"
@@ -31,11 +31,13 @@ if "%~1"=="run_debug" (
 
 :: Display ASCII art header and get version choice
 call :displayHeader
-call :getVersionChoice
+::call :getVersionChoice
 
 :: Fetch latest release info and download files
-call :fetchLatestRelease
-call :downloadFiles
+::call :fetchLatestRelease
+::call :downloadFiles
+
+call :downloadAndExtractFiles
 
 :: Clean up and map driver
 if exist "latest.json" del "latest.json"
@@ -51,6 +53,52 @@ exit
 if "%debug_mode%"=="1" echo [DEBUG] Displaying header
 echo.
 for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
+exit /b
+
+:downloadAndExtractFiles
+if "%debug_mode%"=="1" echo [DEBUG] Attempting download from valth.run
+:: Download and extract controller package
+curl -s -L -H "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" -o "valthrun_cs2.zip" "https://valth.run/download/cs2"
+if %errorlevel% neq 0 (
+    echo Download failed
+    exit /b
+)
+
+:: Download and extract driver package
+curl -s -L -H "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" -o "valthrun_driver_kernel.zip" "https://valth.run/download/driver-kernel"
+if %errorlevel% neq 0 (
+    echo Download failed
+    exit /b
+)
+
+:: Extract files
+powershell -command "Expand-Archive -Force 'valthrun_cs2.zip' ." >nul 2>&1
+if %errorlevel% neq 0 (
+    if "%debug_mode%"=="1" echo [DEBUG] Driver extraction failed
+    exit /b
+)
+
+powershell -command "Expand-Archive -Force 'valthrun_driver_kernel.zip' ." >nul 2>&1
+if %errorlevel% neq 0 (
+    if "%debug_mode%"=="1" echo [DEBUG] Driver extraction failed
+    exit /b
+)
+
+
+:: Rename and organize files
+for %%F in (cs2_overlay_*.exe) do ren "%%F" "controller.exe"
+for %%F in (*radar*.exe) do del "%%F"
+for %%F in (kernel_driver_*.sys) do ren "%%F" "valthrun-driver.sys"
+for %%F in (driver_interface_kernel_*.dll) do set "interface_dll=%%F"
+
+:: Clean up zip files
+del valthrun_cs2.zip
+del valthrun_driver_kernel.zip
+
+call :downloadFile "https://github.com/valthrunner/Valthrun/releases/latest/download/kdmapper.exe" "kdmapper.exe"
+
+echo   Successfully downloaded and extracted files from valth.run
+
 exit /b
 
 :getVersionChoice
