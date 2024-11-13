@@ -426,7 +426,7 @@ set "errFunctionCallFailed=Function call to set up the Valthrun Kernel Driver fa
 set "errInitializationFailed=The Valthrun Kernel Driver failed to initialize. Check DebugView for more details."
 
 :: Error codes
-set "codeDriverSuccess=0x00000000"
+set "codeDriverSuccess=[+] success"
 set "codeServiceFail=0xc0000603"
 set "codeFunctionCallFailed=0xcf000002"
 set "codeFailedToInitialize=0xcf000003"
