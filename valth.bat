@@ -9,7 +9,7 @@ call :logMessage "Script started"
 call :logMessage "----------------------------------------"
 
 :: Define script title and set initial variables
-set "script_version=4.1"
+set "script_version=5.0"
 set "default_title=Valthrunner's Script v%script_version%"
 set "debug_mode=0"
 title "%default_title%"
