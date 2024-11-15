@@ -16,6 +16,7 @@ title "%default_title%"
 set "mode=0"
 call :logMessage "Script version: %script_version%"
 call :logMessage "Initial mode: %mode%"
+call :logMessage "First argument: %~1"
 
 :: Set mode based on arguments
 if "%~1"=="run_debug" (
