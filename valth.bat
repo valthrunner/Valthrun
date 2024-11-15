@@ -2,9 +2,8 @@
 setlocal EnableDelayedExpansion
 
 :: Initialize timestamp and define log file names
-set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
-set "timestamp=!timestamp: =0!"
-set "new_latest_log=latest_script_!timestamp!.log"
+for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value') do set timestamp=%%I
+set "new_latest_log=latest_script_%timestamp:~0,8%_%timestamp:~8,6%.log"
 
 :: Rename any existing latest_script_<timestamp>.log files to script_<timestamp>.log
 for %%F in (latest_script_*.log) do (
