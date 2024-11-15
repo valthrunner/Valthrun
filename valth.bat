@@ -1,46 +1,10 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-:: Initialize logging
-:: Parse the current date dynamically based on its format
-for /f "tokens=2 delims= " %%A in ('date /t') do set "rawdate=%%A"
-
-:: Check for date format and extract components
-if "%rawdate:~2,1%"=="/" (
-    :: American format MM/DD/YYYY
-    set "month=%rawdate:~0,2%"
-    set "day=%rawdate:~3,2%"
-    set "year=%rawdate:~6,4%"
-) else if "%rawdate:~2,1%"=="." (
-    :: European format DD.MM.YYYY
-    set "day=%rawdate:~0,2%"
-    set "month=%rawdate:~3,2%"
-    set "year=%rawdate:~6,4%"
-) else if "%rawdate:~4,1%"=="-" (
-    :: ISO format YYYY-MM-DD
-    set "year=%rawdate:~0,4%"
-    set "month=%rawdate:~5,2%"
-    set "day=%rawdate:~8,2%"
-) else (
-    echo Unsupported date format: %rawdate%
-    exit /b 1
-)
-
-:: Parse the current time
-for /f "tokens=1-4 delims=:. " %%A in ("%time%") do (
-    set "hour=%%A"
-    set "minute=%%B"
-    set "second=%%C"
-)
-
-:: Zero-pad hour for 24-hour format
-if "%hour:~0,1%"==" " set "hour=0%hour:~1,1%"
-
-:: Combine components into timestamp
-set "timestamp=%year%%month%%day%_%hour%%minute%%second%"
-
-:: Define new log file name
-set "new_latest_log=latest_script_%timestamp%.log"
+:: Initialize timestamp and define log file names
+set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+set "timestamp=!timestamp: =0!"
+set "new_latest_log=latest_script_!timestamp!.log"
 
 :: Rename any existing latest_script_<timestamp>.log files to script_<timestamp>.log
 for %%F in (latest_script_*.log) do (
