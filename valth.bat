@@ -4,17 +4,18 @@ setlocal EnableDelayedExpansion
 :: Initialize logging
 set "timestamp=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
 set "timestamp=!timestamp: =0!"
-set "logfile=script_!timestamp!.log"
-set "latest_log=latest_script.log"
+set "new_latest_log=latest_script_!timestamp!.log"
 
-:: Check if the latest log exists and rename it
-if exist "%latest_log%" (
-    echo Renaming %latest_log% to %logfile%...
-    rename "%latest_log%" "%logfile%"
+:: Rename any existing latest_script_<timestamp>.log files to script_<timestamp>.log
+for %%F in (latest_script_*.log) do (
+    set "old_latest_log=%%F"
+    set "renamed_log=!old_latest_log:latest_=!"
+    echo Renaming %%F to !renamed_log!...
+    rename "%%F" "!renamed_log!"
 )
 
 :: Set the current log file as the latest
-set "logfile=%latest_log%"
+set "logfile=%new_latest_log%"
 
 call :logMessage "Script started"
 call :logMessage "----------------------------------------"
