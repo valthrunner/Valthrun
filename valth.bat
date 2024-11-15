@@ -18,20 +18,8 @@ call :logMessage "Script version: %script_version%"
 call :logMessage "Initial mode: %mode%"
 call :logMessage "First argument: %~1"
 
-:: Normalize and trim the argument
-set "arg=%~1"
-if not defined arg (
-    set "arg=run"
-    call :logMessage "No argument provided. Defaulting to 'run'."
-)
-
-:: Trim spaces from argument
-for /f "tokens=* delims= " %%A in ("%arg%") do set "arg=%%A"
-
-call :logMessage "Normalized argument: '%arg%'"
-
 :: Set mode based on the argument
-if /i "%arg%"=="run_debug" (
+if /i "%~1"=="run_debug" (
     set "debug_mode=1"
     set "mode=0"
     echo [DEBUG] Running in debug mode
@@ -39,11 +27,11 @@ if /i "%arg%"=="run_debug" (
     echo [DEBUG] Script version: %script_version%
     call :logMessage "Debug mode enabled"
     call :logMessage "Current directory: %CD%"
-) else if /i "%arg%"=="run_userperms" (
+) else if /i "%~1"=="run_userperms" (
     set "mode=1"
     title "%default_title% (with user perms for controller)"
     call :logMessage "Running with user permissions mode"
-) else if /i "%arg%"=="run" (
+) else if /i "%~1"=="run" (
     call :logMessage "Run mode selected"
 ) else (
     call :logMessage "No valid run parameter, downloading run.bat"
