@@ -345,7 +345,7 @@ function HandleKdmapperErrors {
 
     $fileContent = Get-Content -Path $kdmapperLogFile
 
-    if ($fileContent -match "\[+\] success") {
+    if ($fileContent -match "\[\+\] success") {
         LogMessage "Driver successfully loaded"
         Write-Host "  Driver successfully loaded, will continue." -ForegroundColor Green
     } elseif ($fileContent -match "0xcf000004") {
