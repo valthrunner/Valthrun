@@ -1,14 +1,28 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-:: Define script title
-set "scriptTitle=Valthrunner's Script Loader Script"
-title %scriptTitle%
-
 :: Check for administrative privileges and request if necessary
-set "params=%*"
-cd /d "%~dp0" && ( if exist "%temp%\getadmin.vbs" del "%temp%\getadmin.vbs" ) && fsutil dirty query %systemdrive% 1>nul 2>nul || (  echo Set UAC = CreateObject^("Shell.Application"^) : UAC.ShellExecute "cmd.exe", "/k cd ""%~sdp0"" && ""%~s0"" %params%", "", "runas", 1 >> "%temp%\getadmin.vbs" && "%temp%\getadmin.vbs" && exit /B )
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Set UAC = CreateObject^("Shell.Application"^) : UAC.ShellExecute "cmd.exe", "/k cd ""%~sdp0"" && ""%~s0"" %*", "", "runas", 1 > "%temp%\getadmin.vbs"
+    "%temp%\getadmin.vbs"
+    del "%temp%\getadmin.vbs"
+    exit /B
+)
 
-curl -s -L -o "%temp%/valth.bat" "https://raw.githubusercontent.com/valthrunner/Valthrun/main/valth.bat"
+:: Determine the argument to pass
+set "ARG=%~1"
+if "%ARG%"=="" set "ARG=run"
 
-%temp%/valth.bat run
+:: Set the main folder (the folder containing run.bat)
+set "MAIN_FOLDER=%~dp0"
+:: Remove trailing backslash if present
+if "%MAIN_FOLDER:~-1%"=="\" set "MAIN_FOLDER=%MAIN_FOLDER:~0,-1%"
+
+:: Set execution policy and download PowerShell script to temp folder
+powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/valthrunner/valth/main/loader.ps1' -OutFile '%temp%\loader.ps1'"
+
+:: Execute PowerShell script with the appropriate argument and main folder path
+powershell -ExecutionPolicy Bypass -File "%temp%\loader.ps1" "%ARG%" "%MAIN_FOLDER%"
+
+exit /b
