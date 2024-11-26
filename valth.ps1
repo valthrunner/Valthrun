@@ -332,6 +332,9 @@ function HandleKdmapperErrors {
     # Implement error checking logic as per the batch script
     if ($debug_mode -eq 1) { Write-Host "[DEBUG] Checking kdmapper errors" -ForegroundColor Cyan }
     LogMessage "Checking kdmapper errors"
+    if ($debug_mode -eq 1) {
+    Write-Host "[DEBUG] Log file content: $fileContent" -ForegroundColor Cyan
+    }
 
     if (!(Test-Path $kdmapperLogFile)) {
         Write-Host "  Error: kdmapper log file not found." -ForegroundColor Red
