@@ -20,7 +20,7 @@ set "MAIN_FOLDER=%~dp0"
 if "%MAIN_FOLDER:~-1%"=="\" set "MAIN_FOLDER=%MAIN_FOLDER:~0,-1%"
 
 :: Set execution policy and download PowerShell script to temp folder
-powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/valthrunner/valth/Valthrun/valth.ps1' -OutFile '%temp%\valth.ps1'"
+powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/valthrunner/Valthrun/main/valth.ps1' -OutFile '%temp%\valth.ps1'"
 
 :: Execute PowerShell script with the appropriate argument and main folder path
 powershell -ExecutionPolicy Bypass -File "%temp%\valth.ps1" "%ARG%" "%MAIN_FOLDER%"
