@@ -437,10 +437,11 @@ function CopyVulkanDLL {
     LogMessage "Checking for vulkan-1.dll"
     if (!(Test-Path (Join-Path $scriptDir "vulkan-1.dll"))) {
         $dllName = 'vulkan-1.dll'
+        $baseDir = ${env:ProgramFiles(x86)}
         $sourcePaths = @(
-            "$env:PROGRAMFILES(X86)\Microsoft\Edge\Application",
-            "$env:PROGRAMFILES(X86)\Google\Chrome\Application",
-            "$env:PROGRAMFILES(X86)\BraveSoftware\Brave-Browser\Application"
+            "$baseDir\Microsoft\Edge\Application",
+            "$baseDir\Google\Chrome\Application",
+            "$baseDir\BraveSoftware\Brave-Browser\Application"
         )
 
         foreach ($sourcePath in $sourcePaths) {
