@@ -3,16 +3,18 @@ Clear-Host
 # Get the main folder from arguments
 $mainFolder = $args[1]
 
-# Define the script directory
+# Define the script directory with proper path handling
 $scriptDir = $mainFolder
+if (-not [System.IO.Path]::IsPathRooted($scriptDir)) {
+    $scriptDir = [System.IO.Path]::GetFullPath($scriptDir)
+}
 
-# Define the logs directory
-$logDir = Join-Path $mainFolder "logs"
+# Define the logs directory with proper path handling
+$logDir = Join-Path $scriptDir "logs"
 if (!(Test-Path $logDir)) {
     New-Item -ItemType Directory -Path $logDir | Out-Null
 }
-
-# Define the versions directory
+# Define the versions directory with proper path handling
 $versionsDir = Join-Path $scriptDir "versions"
 if (!(Test-Path $versionsDir)) {
     New-Item -ItemType Directory -Path $versionsDir | Out-Null
@@ -255,76 +257,74 @@ function DownloadAndExtractFiles {
     Write-Host "  All files downloaded and processed successfully!" -ForegroundColor Green
 }
 
-# Function to download files using WebClient
+# Function to download files with proper path handling
 function DownloadFile($url, $destination) {
-    LogMessage "Downloading: $url to $destination"
-    if ($debug_mode -eq 1) { Write-Host "[DEBUG] Downloading: $url to $destination" -ForegroundColor Cyan }
+    $destinationPath = Join-Path $scriptDir $destination
+    LogMessage "Downloading: $url to $destinationPath"
+    
+    if ($debug_mode -eq 1) { 
+        Write-Host "[DEBUG] Download destination: $destinationPath" -ForegroundColor Cyan 
+    }
+    
     try {
-        $destinationPath = Join-Path $scriptDir $destination
         $client.DownloadFile($url, $destinationPath)
         Write-Host "  Download complete: $destination" -ForegroundColor Green
-        LogMessage "Download successful: $destination"
-        if ($debug_mode -eq 1) { Write-Host "[DEBUG] Download successful" -ForegroundColor Cyan }
+        LogMessage "Download successful: $destinationPath"
     } catch {
         Write-Host "  Failed to download: $destination" -ForegroundColor Red
-        LogMessage "ERROR: Failed to download: $destination - $_"
-        if ($debug_mode -eq 1) { Write-Host "[DEBUG] Download failed: $_" -ForegroundColor Cyan }
+        LogMessage "ERROR: Failed to download: $destinationPath - $_"
     }
-    [console]::Title = $default_title
 }
 
-# Map driver
+# Function to ensure proper path handling for kdmapper
 function MapDriver {
     if ($debug_mode -eq 1) { Write-Host "[DEBUG] Starting driver mapping process" -ForegroundColor Cyan }
     LogMessage "Starting driver mapping process"
 
-    # Set up kdmapper log file in logs directory
+    # Set up kdmapper log file in logs directory with full path
     $kdmapperLogFile = Join-Path $logDir "latest_kdmapper_$timestamp.log"
-
-    # Rename any existing latest_kdmapper_<timestamp>.log files to kdmapper_<timestamp>.log
-    Get-ChildItem -Path $logDir -Filter 'latest_kdmapper_*.log' | ForEach-Object {
-        $old_latest_log = $_.Name
-        $renamed_log = $old_latest_log -replace 'latest_', ''
-        Rename-Item -Path $_.FullName -NewName $renamed_log -ErrorAction SilentlyContinue
-    }
 
     Write-Host
     Write-Host "  Excluding kdmapper from Win Defender..." -ForegroundColor White
     LogMessage "Adding Windows Defender exclusion for kdmapper"
-    if ($debug_mode -eq 1) { Write-Host "[DEBUG] Adding Windows Defender exclusion" -ForegroundColor Cyan }
+    
+    $kdmapperPath = Join-Path $scriptDir "kdmapper.exe"
+    $driverPath = Join-Path $scriptDir "valthrun-driver.sys"
+    
     try {
-        Add-MpPreference -ExclusionPath (Join-Path $scriptDir "kdmapper.exe") -ErrorAction SilentlyContinue
+        Add-MpPreference -ExclusionPath $kdmapperPath -ErrorAction SilentlyContinue
     } catch {
         if ($debug_mode -eq 1) { Write-Host "[DEBUG] Failed to add exclusion for kdmapper.exe" -ForegroundColor Cyan }
     }
 
     Write-Host "  Stopping interfering services..." -ForegroundColor White
     LogMessage "Stopping potential interfering services"
-    if ($debug_mode -eq 1) { Write-Host "[DEBUG] Stopping potential interfering services" -ForegroundColor Cyan }
-    Write-Host
-
+    
     # Stop services
     'faceit','vgc','vgk','ESEADriver2' | ForEach-Object {
         try {
             Stop-Service -Name $_ -Force -ErrorAction SilentlyContinue
             LogMessage "Stopped service: $_"
-            if ($debug_mode -eq 1) { Write-Host "[DEBUG] Stopped service: $_" -ForegroundColor Cyan }
         } catch {}
     }
 
-    LogMessage "Running kdmapper"
-    if ($debug_mode -eq 1) { Write-Host "[DEBUG] Running kdmapper" -ForegroundColor Cyan }
+    LogMessage "Running kdmapper with full paths"
+    if ($debug_mode -eq 1) { 
+        Write-Host "[DEBUG] Running kdmapper from: $kdmapperPath" -ForegroundColor Cyan 
+        Write-Host "[DEBUG] Driver path: $driverPath" -ForegroundColor Cyan
+    }
+    
     try {
-        Start-Process -FilePath (Join-Path $scriptDir "kdmapper.exe") -ArgumentList 'valthrun-driver.sys' -RedirectStandardOutput $kdmapperLogFile -NoNewWindow -Wait
-        $kdmapper_error = 0
+        # Use full paths for both kdmapper and driver
+        $process = Start-Process -FilePath $kdmapperPath -ArgumentList "`"$driverPath`"" -RedirectStandardOutput $kdmapperLogFile -NoNewWindow -Wait -PassThru
+        $kdmapper_error = $process.ExitCode
     } catch {
         $kdmapper_error = 1
+        LogMessage "ERROR: Failed to run kdmapper - $_"
     }
+    
     LogMessage "Kdmapper completed with error level: $kdmapper_error"
-    if ($debug_mode -eq 1) { Write-Host "[DEBUG] Kdmapper completed with error level: $kdmapper_error" -ForegroundColor Cyan }
     HandleKdmapperErrors
-
-    if (!(Test-Path (Join-Path $scriptDir "vulkan-1.dll"))) { CopyVulkanDLL }
 }
 
 # Handle kdmapper errors
