@@ -461,31 +461,40 @@ function CopyVulkanDLL {
     }
 }
 
-# Create and run scheduled task
+# Updated CreateAndRunTask function with fixed path handling
 function CreateAndRunTask($taskName, $taskPath) {
-    $startIn = $scriptDir
-    $userName = $env:USERNAME
+    # Ensure we have the full path
+    if (-not [System.IO.Path]::IsPathRooted($taskPath)) {
+        $taskPath = [System.IO.Path]::GetFullPath($taskPath)
+    }
 
     LogMessage "Creating scheduled task: $taskName"
     LogMessage "Task path: $taskPath"
-    LogMessage "Working directory: $startIn"
-    LogMessage "User name: $userName"
+    LogMessage "Working directory: $scriptDir"
+    LogMessage "User name: $env:USERNAME"
 
     try {
         $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date.AddMinutes(1)
-        $action = New-ScheduledTaskAction -Execute (Join-Path $startIn $taskPath) -WorkingDirectory $startIn
-        Register-ScheduledTask -TaskName $taskName -Trigger $trigger -Action $action -User "$env:COMPUTERNAME\$userName" -RunLevel Highest -Force -ErrorAction Stop | Out-Null
-        [console]::Title = $default_title
+        $action = New-ScheduledTaskAction -Execute $taskPath -WorkingDirectory $scriptDir
+        
+        if ($debug_mode -eq 1) {
+            Write-Host "[DEBUG] Task path: $taskPath" -ForegroundColor Cyan
+            Write-Host "[DEBUG] Working directory: $scriptDir" -ForegroundColor Cyan
+        }
+
+        Register-ScheduledTask -TaskName $taskName -Trigger $trigger -Action $action -User "$env:COMPUTERNAME\$env:USERNAME" -RunLevel Highest -Force -ErrorAction Stop | Out-Null
         Start-ScheduledTask -TaskName $taskName
         LogMessage "Started scheduled task: $taskName"
+        Start-Sleep -Seconds 2  # Give the task a moment to start
         Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue | Out-Null
     } catch {
         LogMessage "ERROR: Failed to create or run scheduled task: $taskName - $_"
         Write-Host "  ERROR: Could not create or run scheduled task: $taskName" -ForegroundColor Red
+        Write-Host "  Error details: $_" -ForegroundColor Red
     }
 }
 
-# Run Valthrun
+# Main RunValthrun function with fixed path handling
 function RunValthrun {
     if ($debug_mode -eq 1) { Write-Host "[DEBUG] Starting Valthrun launch process" -ForegroundColor Cyan }
     LogMessage "Starting Valthrun launch process"
@@ -498,34 +507,47 @@ function RunValthrun {
         Write-Host "  CS2 is running. Valthrun will load." -ForegroundColor Green
         Write-Host
     } else {
-        if ($debug_mode -eq 1) { Write-Host "[DEBUG] Starting CS2" -ForegroundColor Cyan }
-        LogMessage "Starting CS2"
-        Write-Host
-        Write-Host "  CS2 is not running. Starting it..." -ForegroundColor Yellow
-        Start-Process 'steam://run/730'
-        Write-Host
-        Write-Host "  Waiting for CS2 to start..." -ForegroundColor White
-        do {
-            Start-Sleep -Seconds 1
-            $cs2_running = Get-Process -Name 'cs2' -ErrorAction SilentlyContinue
-        } until ($cs2_running)
-        LogMessage "CS2 has started"
-        if ($debug_mode -eq 1) { Write-Host "[DEBUG] CS2 has started" -ForegroundColor Cyan }
-        Write-Host
-        Write-Host "  Valthrun will now load." -ForegroundColor Green
-        Write-Host
-        Start-Sleep -Seconds 15
+        if (!$skipStartCS) {
+            if ($debug_mode -eq 1) { Write-Host "[DEBUG] Starting CS2" -ForegroundColor Cyan }
+            LogMessage "Starting CS2"
+            Write-Host
+            Write-Host "  CS2 is not running. Starting it..." -ForegroundColor Yellow
+            Start-Process 'steam://run/730'
+            Write-Host
+            Write-Host "  Waiting for CS2 to start..." -ForegroundColor White
+            do {
+                Start-Sleep -Seconds 1
+                $cs2_running = Get-Process -Name 'cs2' -ErrorAction SilentlyContinue
+            } until ($cs2_running)
+            LogMessage "CS2 has started"
+            if ($debug_mode -eq 1) { Write-Host "[DEBUG] CS2 has started" -ForegroundColor Cyan }
+            Write-Host
+            Write-Host "  Valthrun will now load." -ForegroundColor Green
+            Write-Host
+            Start-Sleep -Seconds 15
+        }
     }
 
-    if ($skipStartCS -eq $false) {
+    # Use full paths with proper quoting
+    $controllerPath = Join-Path $scriptDir "controller.exe"
+    $experimentalControllerPath = Join-Path $scriptDir "controller_experimental.exe"
+
+    if ($debug_mode -eq 1) {
+        Write-Host "[DEBUG] Controller path: $controllerPath" -ForegroundColor Cyan
+        Write-Host "[DEBUG] Current directory: $scriptDir" -ForegroundColor Cyan
+    }
+    LogMessage "Controller path: $controllerPath"
+    LogMessage "Current directory: $scriptDir"
+
+    if (!$skipStartCS) {
         if ($mode -eq 1) {
             if ($debug_mode -eq 1) { Write-Host "[DEBUG] Running with user permissions" -ForegroundColor Cyan }
             LogMessage "Running with user permissions"
-            CreateAndRunTask "ValthTask" "controller.exe"
+            CreateAndRunTask "ValthTask" $controllerPath
         } elseif ($mode -eq 2) {
             if ($debug_mode -eq 1) { Write-Host "[DEBUG] Running experimental version" -ForegroundColor Cyan }
             LogMessage "Running experimental version"
-            CreateAndRunTask "ValthExpTask" "controller_experimental.exe"
+            CreateAndRunTask "ValthExpTask" $experimentalControllerPath
             Write-Host "  Running experimental version with Aimbot!" -ForegroundColor Green
             Write-Host
             Write-Host "  BE WARNED YOU SHOULDN'T USE THIS ON YOUR MAIN!" -ForegroundColor Red
@@ -535,7 +557,21 @@ function RunValthrun {
         } else {
             if ($debug_mode -eq 1) { Write-Host "[DEBUG] Running standard version" -ForegroundColor Cyan }
             LogMessage "Running standard version"
-            Start-Process 'controller.exe'
+            
+            # Verify file exists before attempting to start
+            if (Test-Path $controllerPath) {
+                try {
+                    Start-Process -FilePath $controllerPath -WorkingDirectory $scriptDir
+                    LogMessage "Successfully started controller"
+                } catch {
+                    Write-Host "  ERROR: Failed to start controller.exe" -ForegroundColor Red
+                    Write-Host "  Error details: $_" -ForegroundColor Red
+                    LogMessage "ERROR: Failed to start controller - $_"
+                }
+            } else {
+                Write-Host "  ERROR: controller.exe not found at: $controllerPath" -ForegroundColor Red
+                LogMessage "ERROR: controller.exe not found at: $controllerPath"
+            }
         }
     } else {
         Write-Host "  Run_test mode: CS will not be started automatically." -ForegroundColor Yellow
